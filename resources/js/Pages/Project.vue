@@ -1,85 +1,101 @@
 <script>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import SideBar from '@/Components/SideBar.vue';
 import { Head } from '@inertiajs/vue3';
+import { defineComponent } from 'vue';
+import { VueDraggableNext } from 'vue-draggable-next';
 
-import { defineComponent } from 'vue'
-import { VueDraggableNext } from 'vue-draggable-next'
 export default defineComponent({
     components: {
         draggable: VueDraggableNext,
         AuthenticatedLayout,
         Head,
+        SideBar,
     },
-    data() {
-        return {
-            enabled: true,
-            list: [
-                { name: 'John', id: 1 },
-                { name: 'Joao', id: 2 },
-                { name: 'Jean', id: 3 },
-                { name: 'Gerard', id: 4 },
-            ],
-            dragging: false,
-        }
-    },
-    methods: {
-        log(event) {
-            console.log(event)
-        },
-    },
-})
-
+});
 </script>
 
 <template>
-
     <Head title="Project" />
 
     <AuthenticatedLayout>
+        <!-- Page Header -->
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Project</h2>
         </template>
 
-        <div class="d-flex flex-wrap justify-content-evenly container">
-            <!--Assign Task-->
-            <div class="flex m-5 bg-white rounded shadow" style="width:25%;">
-                <draggable class="dragArea list-group w-full" :list="list" @change="log">
-                    <div class="d-flex justify-content-center font-bold m-2">
-                        <h1>Assign</h1>
-                    </div>
+        <!-- Container -->
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <SideBar />
 
-                    <div class="list-group-item bg-gray-300 m-1 p-3 rounded-md text-center" v-for="element in list"
-                        :key="element.name">
-                        {{ element.name }}
-                    </div>
-                </draggable>
-            </div>
-            <!--Doing-->
-            <div class="flex m-5 bg-white rounded shadow" style="width:25%;">
+                <!-- Main Content Area -->
+                <div class="col-md-10">
+                    <div class="p-3">
+                        <p class="text-muted">Checkout and dive into your ongoing projects!</p>
 
-                <draggable class="dragArea list-group w-full" :list="list" @change="log">
-                    <div class="d-flex justify-content-center font-bold m-2">
-                        <h1>Doing</h1>
-                    </div>
-                    <div class="list-group-item bg-gray-300 m-1 p-3 rounded-md text-center" v-for="element in list"
-                        :key="element.name">
-                        {{ element.name }}
-                    </div>
-                </draggable>
-            </div>
-            <!--Done-->
-            <div class="flex m-5 bg-white rounded shadow" style="width:25%;">
-                <draggable class="dragArea list-group w-full" :list="list" @change="log">
-                    <div class="d-flex justify-content-center font-bold m-2">
-                        <h1>Done</h1>
-                    </div>
+                        <!-- Project List Section -->
+                        <div class="container bg-white shadow rounded p-3">
+                            <h5 class="section-title font-semibold text-xl text-gray-800 leading-tight">Project List</h5>
+                            <p class="text-muted">text label paragraph</p>
 
-                    <div class="list-group-item bg-gray-300 m-1 p-3 rounded-md text-center" v-for="element in list"
-                        :key="element.name">
-                        {{ element.name }}
+                            <!-- Card Grid for Project List -->
+                            <div class="row">
+                                <!-- Card 1 -->
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <div class="card d-flex">
+                                        <img src="/img/template-1.png" class="card-img-top" style="width: 400px; height:200px;" alt="Project Image">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Project 1</h5>
+                                            <p class="card-text">A brief description of Project 1 goes here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div class="col-md-4 mt-3  mb-3">
+                                    <div class="card h-100">
+                                        <img src="/img/template-2.png" class="card-img-top" style="width: 400px; height:200px;" alt="Project Image">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Project 2</h5>
+                                            <p class="card-text">A brief description of Project 2 goes here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card 3 -->
+                                <div class="col-md-4 mt-3  mb-3">
+                                    <div class="card h-100">
+                                        <img src="/img/template-3.png" class="card-img-top" style="width: 400px; height:200px;" alt="Project Image">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Project 3</h5>
+                                            <p class="card-text">A brief description of Project 3 goes here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </draggable>
+                </div>
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+/* Optional additional styling */
+.container {
+    margin-top: 20px;
+}
+
+.card {
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-title {
+    font-weight: 600;
+}
+</style>
