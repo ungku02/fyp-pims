@@ -6,6 +6,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import SideBar from '@/Components/SideBar.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -15,11 +16,12 @@ const showingNavigationDropdown = ref(false);
         <div class="min-h-screen bg-gray-100">
             <nav class="bg-white border-b border-gray-100">
                 <!-- Primary Navigation Menu -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-">
                     <div class="flex justify-between h-16">
                         <div class="flex">
+                            <SideBar />
                             <!-- Logo -->
-                            <div class="shrink-0 flex items-center">
+                            <div class="shrink-0 flex items-center justify-content-start">
                                 <Link :href="route('dashboard')">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-gray-800"
@@ -28,17 +30,21 @@ const showingNavigationDropdown = ref(false);
                             </div>
 
                             <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <!-- <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
                                 <NavLink :href="route('board')" :active="route().current('board')">
                                    Workspace
                                 </NavLink>
-                                <NavLink :href="route('project')" :active="route().current('project')">
+                                <NavLink :href="route('project')" :active="route().current('project/show')">
                                    Project
                                 </NavLink>
-                            </div>
+                                <NavLink :href="route('project/kanban')" :active="route().current('project/kanban')">
+                                   Kanban Board
+                                </NavLink>
+
+                            </div> -->
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -143,11 +149,13 @@ const showingNavigationDropdown = ref(false);
             </nav>
 
             <!-- Page Heading -->
-            <header class="bg-white shadow" v-if="$slots.header">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
+            <!-- Page Heading -->
+<header class="bg-white shadow" v-if="$slots.header">
+    <div class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 text-base leading-tight">
+        <slot name="header" />
+    </div>
+</header>
+
 
             <!-- Page Content -->
             <main>

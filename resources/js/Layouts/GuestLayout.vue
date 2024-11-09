@@ -4,10 +4,11 @@ import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+    <div class="min-h-screen bg-black flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
         <div>
             <Link href="/">
-                <ApplicationLogo class="w-20 h-20 fill-current text-gray-500" />
+                <!-- <ApplicationLogo class="w-20 h-20 fill-current text-gray-500" /> -->
+                <img src="img/logo2.png" class="fill-current text-gray-500" alt="" style="height: 150px; width: 250px;;">
             </Link>
         </div>
 
@@ -18,3 +19,4 @@ import { Link } from '@inertiajs/vue3';
         </div>
     </div>
 </template>
+

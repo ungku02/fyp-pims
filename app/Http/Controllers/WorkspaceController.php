@@ -24,12 +24,16 @@ class WorkspaceController extends Controller
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
+            // 'user_id' => 'required'
         ]);
+
+        $validatedData['user_id'] = auth()->id();
         
         // Create a new workspace with the validated data
         $workspace = Workspace::create([
             'title' => $validatedData['title'],
             'description' => $validatedData['description'],
+            'user_id' => $validatedData['user_id']
         ]);
     
         // Redirect to the 'board' route

@@ -59,9 +59,14 @@ const submit = () => {
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="d-flex flex-wrap container">
                         <div class="cols-7 md-8" v-for="workspace in workspaces" :key="workspace.id">
-                            <TaskCard :style="{
-                                marginTop: '30px',
-                            }" :id="workspace.id" :title="workspace.title" :description="workspace.description" />
+                            <TaskCard 
+                            :style="{ marginTop: '30px' }" 
+                            :key="workspace.id" 
+                            :title="workspace.title" 
+                            :description="workspace.description"
+                            :link="route('project/show', { id: workspace.id })" 
+                            :workspace="workspace" 
+                            />
 
                         </div>
                     </div>

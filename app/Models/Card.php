@@ -5,21 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Workspace extends Model
+class Card extends Model
 {
     use HasFactory;
 
-    protected $table = 'workspace';
+    
+    protected $table = 'card';
 
     protected $fillable = [
+        'column_id',
+        'status_id',
         'title',
-        'description',
-        'user_id'
+        'description'
     ];
 
-    public function project()
+    public function columns()
     {
-    return $this->hasMany(Project::class, 'workspace_id', 'id');
+    return $this->belongsTo(Column::class, 'column_id', 'id');
 
     }
 }

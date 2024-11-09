@@ -25,20 +25,19 @@ export default defineComponent({
         </template>
 
         <!-- Container -->
-        <div class="container-fluid">
-            <div class="row">
+            <div class="max-w-mx-auto sm:px-6 lg:px-8 ">
                 <!-- Sidebar -->
                 <SideBar />
 
                 <!-- Main Content Area -->
-                <div class="col-md-10">
-                    <div class="p-3">
+               
+                    
                         <p class="text-muted">Checkout and dive into your ongoing projects!</p>
-
-                        <!-- Project List Section -->
-                        <div class="container bg-white shadow rounded p-3">
+               <!-- Project List Section -->
+                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="d-flex flex-wrap container">
                             <h5 class="section-title font-semibold text-xl text-gray-800 leading-tight">Project List</h5>
-                            <p class="text-muted">text label paragraph</p>
+                            <!-- <p class="text-muted">text label paragraph</p> -->
 
                             <!-- Card Grid for Project List -->
                             <div class="row">
@@ -76,8 +75,7 @@ export default defineComponent({
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+     
     </AuthenticatedLayout>
 </template>
 
