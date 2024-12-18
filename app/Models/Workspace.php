@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\WorkspaceMembers;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Workspace extends Model
 {
@@ -21,5 +22,10 @@ class Workspace extends Model
     {
     return $this->hasMany(Project::class, 'workspace_id', 'id');
 
+    }
+
+    public function members()
+    {
+        return $this->hasMany(WorkspaceMembers::class, 'workspace_id', 'id')->with('users');
     }
 }

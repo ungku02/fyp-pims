@@ -29,9 +29,7 @@ export default defineComponent({
                 <!-- Sidebar -->
                 <SideBar />
 
-                <!-- Main Content Area -->
-               
-                    
+                <!-- Main Content Area --> 
                         <p class="text-muted">Checkout and dive into your ongoing projects!</p>
                <!-- Project List Section -->
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

@@ -30,4 +30,9 @@ class Column extends Model
     return $this->hasMany(Card::class);
     }
 
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id', 'id');
+    }
+
 }

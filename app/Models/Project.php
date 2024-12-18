@@ -31,4 +31,9 @@ class Project extends Model
     return $this->hasMany(Column::class, 'project_id', 'id');
 
     }
+
+    public function userRole()
+    {
+        return $this->hasMany(UserRole::class, 'project_id', 'id');
+    }
 }

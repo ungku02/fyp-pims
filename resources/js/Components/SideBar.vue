@@ -13,7 +13,7 @@
                     <Link :class="{'nav-link': true, 'active': route().current('board')}" :href="route('board')">Workspaces</Link>
                     <Link :class="{'nav-link': true, 'active': route().current('project')}" :href="route('project')">Projects</Link>
                     <Link :class="{'nav-link': true, 'active': route().current('project/kanban')}" :href="route('project/kanban')">Kanban Board</Link>
-                    <Link class="nav-link" href="#">Teams</Link>
+                    <Link :class="{'nav-link': true, 'active': route().current('project/team')}" :href="route('project/team')">Teams</Link>
                     <Link class="nav-link" href="#">Integration</Link>
                     <Link class="nav-link" href="#">Reports/Analytics</Link>
                     <Link class="nav-link" href="#">Archived</Link>

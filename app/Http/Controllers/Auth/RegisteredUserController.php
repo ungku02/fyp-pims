@@ -48,4 +48,17 @@ class RegisteredUserController extends Controller
 
         return redirect(route('dashboard', absolute: false));
     }
+
+    public function searchByEmail(Request $request)
+{
+    $request->validate(['email' => 'required|email']);
+    $user = User::where('email', $request->email)->first();
+
+    if ($user) {
+        return response()->json(['name' => $user->name, 'email' => $user->email]);
+    } else {
+        return response()->json(null);
+    }
+}
+
 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="container text-cneter">
+    <div class="container text-center">
         <div class="row">
             <div class="col">
                 <div class="card" style="width: 18rem;height: 12rem;">
@@ -10,8 +10,8 @@
                         </div>
 
 
-                        <div class="d-flex align-self-center">
-                            <p class="card-text mb-2">{{ description }}</p>
+                        <div class="d-flex align-self-center ">
+                            <p class="card-text mb-2 card-description">{{ description }}</p>
                         </div>
 
                         <div>
@@ -55,4 +55,15 @@ defineProps({
     background-color: #64676c;
     color: whitesmoke;
 }
+
+.card-description {
+    height: auto; /* Adjust height dynamically */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+    display: -webkit-box; /* Use flex container for multiline truncation */
+    -webkit-line-clamp: 3; /* Limit text to 3 lines */
+    -webkit-box-orient: vertical; /* Ensure vertical orientation */
+    white-space: normal; /* Ensure text wraps to the next line */
+}
+
 </style>
