@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 import ProjectLayout from '@/Layouts/ProjectLayout.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -20,7 +20,15 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    notifications: {
+        type: Array,
+        default: () => [],
+    },
 });
+
+const unreadCount = computed(() =>
+    props.notifications.filter((notification) => !notification.read).length
+);
 
 const roles = ref([]); // Fetch roles from the server or define them here
 
@@ -49,7 +57,7 @@ console.log('Project prop in Show.vue:', props.project);
 </script>
 
 <template>
-    <ProjectLayout :project="project">
+    <ProjectLayout :project="project" :notifications="notifications">
         <header class="bg-light-purple p-4 rounded " style="background-color: #fff; border: solid 1px #6C5B7B;">
             <h5
                 style="text-align: center; font-weight: bold;background: linear-gradient(to right,  #6C5B7B, #C2B9CB); color:#fff; max-width:300px; padding: 5px; border-radius: 20px;">
@@ -135,18 +143,18 @@ console.log('Project prop in Show.vue:', props.project);
 
                         </div>
                         <div class="d-flex align-items-center m-2">
-                                    <p class="mb-0 me-1" style="font-size: 12px;">Progress:</p>
-                                    <div class="d-flex align-items-center">
-                                        <div class="progress" role="progressbar" aria-label="Example 20px high"
-                                            aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"
-                                            style="height: 10px; width: 100px;">
-                                            <div class="progress-bar bg-secondary" style="width: 25%; font-size: 7px;">
-                                            </div>
-                                        </div>
-                                        <!-- Progress percentage outside the bar -->
-                                        <span class="ms-2" style="font-size: 12px;">25%</span>
+                            <p class="mb-0 me-1" style="font-size: 12px;">Progress:</p>
+                            <div class="d-flex align-items-center">
+                                <div class="progress" role="progressbar" aria-label="Example 20px high"
+                                    aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"
+                                    style="height: 10px; width: 100px;">
+                                    <div class="progress-bar bg-secondary" style="width: 25%; font-size: 7px;">
                                     </div>
                                 </div>
+                                <!-- Progress percentage outside the bar -->
+                                <span class="ms-2" style="font-size: 12px;">25%</span>
+                            </div>
+                        </div>
                         <div class="card-footer">
                             <button>Open</button>
                         </div>

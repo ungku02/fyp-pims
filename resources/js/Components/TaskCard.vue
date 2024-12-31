@@ -17,12 +17,7 @@
                         <div>
                             <a :href="link"
                                 class="btn bg-gray-600 text-white position-absolute bottom-0 start-0 m-3">Open</a>
-                               
-                        </div> 
-                        <div class="d-flex justify-content-end position-absolute bottom-0 end-0 m-3">
-
-                       <a href="btn bg-warning"> <i class="bi bi-pencil-square me-1"></i></a>
-                        <i class="bi bi-trash me-1"></i></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,13 +52,19 @@ defineProps({
 }
 
 .card-description {
-    height: auto; /* Adjust height dynamically */
-    overflow: hidden; /* Hide overflowing text */
-    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
-    display: -webkit-box; /* Use flex container for multiline truncation */
-    -webkit-line-clamp: 3; /* Limit text to 3 lines */
-    -webkit-box-orient: vertical; /* Ensure vertical orientation */
-    white-space: normal; /* Ensure text wraps to the next line */
+    height: auto;
+    /* Adjust height dynamically */
+    overflow: hidden;
+    /* Hide overflowing text */
+    text-overflow: ellipsis;
+    /* Add ellipsis for overflowed text */
+    display: -webkit-box;
+    /* Use flex container for multiline truncation */
+    -webkit-line-clamp: 3;
+    /* Limit text to 3 lines */
+    -webkit-box-orient: vertical;
+    /* Ensure vertical orientation */
+    white-space: normal;
+    /* Ensure text wraps to the next line */
 }
-
 </style>

@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(UserRole::class, 'user_id', 'id');
     }
 
+    public function roles()
+    {
+    return $this->belongsTo(Role::class, 'role_id', 'id');
+    }
+
     public function workspace()
     {
         return $this->hasMany(WorkspaceMembers::class, 'user_id', 'id');
@@ -59,5 +64,15 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function workspaces()
+    {
+        return $this->hasMany(Workspace::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
     }
 }

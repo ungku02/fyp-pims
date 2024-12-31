@@ -4,6 +4,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link, usePage } from '@inertiajs/vue3'; // Import the Link component
 import { router } from '@inertiajs/vue3';
+import dayjs from 'dayjs';
 
 
 const props = defineProps({
@@ -21,6 +22,11 @@ const props = defineProps({
         default: () => [],
     },
 });
+
+const formatDate = (dateString) => {
+    return dayjs(dateString).format('MMMM D, YYYY');
+};
+
 
 // console.log("Notifications:", props.workspaces);
 const unreadCount = computed(() =>
@@ -60,8 +66,8 @@ onMounted(() => {
     <div class="min-h-screen" style="background-color: #fff;">
         <!-- Sidebar -->
         <div class="d-flex" style="border-radius: 20px;">
-            <aside v-if="isSidebarOpen" class="text-white">
-                <div class="d-flex flex-wrap justify-content-start">
+            <aside v-if="isSidebarOpen" class="text-white" style="width: 250px;">
+                <div class=" d-flex flex-wrap justify-content-start" style="width: 250px;">
                     <ApplicationLogo />
                     <!-- <img :src="asset('img/logo4.png')" alt="PIMS Logo"
                         style="height: 100px; width: 150px; margin-top: 0; padding: 0;"> -->
@@ -164,17 +170,22 @@ onMounted(() => {
                         <div class="d-flex align-items-center gap-3">
                             <i class="bi bi-envelope fs-5" style="color: #42275a;"></i>
                             <div class="position-relative">
-                                <button class="btn btn-light p-0" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-light p-0" id="notificationDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
                                     <i class="bi bi-bell fs-5" style="color: #42275a;"></i>
                                     <span v-if="unreadCount > 0"
-                                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                         {{ unreadCount }}
                                     </span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
-                                    <li v-if="props.notifications.length === 0" class="dropdown-item">No notifications</li>
-                                    <li v-for="notification in props.notifications" :key="notification.id" class="dropdown-item">
+                                    <li v-if="props.notifications.length === 0" class="dropdown-item">No notifications
+                                    </li>
+                                    <li v-for="notification in props.notifications" :key="notification.id"
+                                        class="dropdown-item">
                                         {{ JSON.parse(notification.data).message }}
+                                        <br>
+                                        {{ formatDate(notification.created_at) }}
                                     </li>
                                 </ul>
                             </div>

@@ -71,9 +71,13 @@ class ProjectController extends Controller
                            ->where('project_id', $id)
                            ->paginate(5);
 
+        $notifications = auth()->user()->notifications; // Get user notifications
+
+
         return Inertia::render('project/Show', [
             'project' => $project, // Pass the project title
             'members' => $members, // Pass paginated members
+            'notifications' => $notifications, // Pass notifications
         ]);
     }
 

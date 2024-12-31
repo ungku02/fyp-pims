@@ -67,7 +67,7 @@ class CardController extends Controller
     public function getUserCards()
     {
         $userId = Auth::id();
-        $cards = Card::with(['userRole.users', 'userRole.roles'])
+        $cards = Card::with(['userRole.users', 'userRole.roles', 'columns.status'])
             ->whereHas('userRole', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })->get();

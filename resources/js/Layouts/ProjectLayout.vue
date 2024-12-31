@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,computed } from 'vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { router, usePage } from '@inertiajs/vue3';
@@ -9,11 +9,17 @@ const props = defineProps({
         type: Object,
         required: true
     },
+
+    notifications: {
+        type: Array,
+        default: () => [],
+    },
 });
 
-const { notifications } = usePage().props.value;
-const unreadCount = ref(notifications.filter(notification => !notification.read).length);
-
+// const { notifications } = usePage().props.value;
+const unreadCount = computed(() =>
+    props.notifications.filter((notification) => !notification.read).length
+);
 function goToKanban(projectId) {
     router.visit(route('project.kanban', { project: projectId }));
 }
@@ -39,7 +45,7 @@ onMounted(() => {
     <div class="min-h-screen" style="background-color: #fff;">
         <!-- Sidebar -->
         <div class="d-flex" style="border-radius: 20px;">
-            <aside v-if="isSidebarOpen" class="text-white" style="width: 250px; ">
+            <aside v-if="isSidebarOpen" class="text-white" style="width: 250px !important; ">
                 <div class="d-flex flex-wrap justify-content-start">
                     <ApplicationLogo />
                     <div class="p-3 mt-auto">

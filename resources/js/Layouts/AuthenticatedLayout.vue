@@ -1,19 +1,53 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Link, usePage } from '@inertiajs/vue3'; // Import the Link component
+import { Link, usePage } from '@inertiajs/vue3'; // Import the Link and useRoute components
 
 const { props } = usePage();
 const workspaces = ref(props.workspaces);
-
-const showingNavigationDropdown = ref(false);
+const role = ref(props.role || {});
 const currentDate = ref("");
 const isSidebarOpen = ref(true);
 
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
+
+const goToBoard = () => {
+    window.location.href = route('board');
+};
+
+const unreadCount = computed(() => {
+    return props.notifications ? props.notifications.filter((notification) => !notification.read).length : 0;
+});
+
+const isOwner = computed(() => {
+    return workspaces.value.some(workspace => workspace.user_id === props.auth.user.id);
+});
+
+const canManageRoles = computed(() => {
+    return role.value.name === 'Project Manager' || role.value.name === 'System Analyst';
+});
+
+const pageTitle = computed(() => {
+    if (route().current('dashboard'))
+        return 'Dashboard';
+    else if (route().current('board'))
+        return 'Workspaces';
+    else if (route().current('swap.tasks'))
+        return 'Swap Tasks';
+    else if (route().current('settings'))
+        return 'Settings';
+    else if (route().current('preview'))
+        return 'Preview';
+    else if (route().current('roles.index'))
+        return 'Role Management';
+    else if (route().current('show.workspace'))
+        return 'Workspace';
+    else
+        return 'PIMS';
+});
 
 onMounted(() => {
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
@@ -31,14 +65,15 @@ onMounted(() => {
                     <!-- <img :src="asset('img/logo4.png')" alt="PIMS Logo"
                         style="height: 100px; width: 150px; margin-top: 0; padding: 0;"> -->
                     <div class="p-3 mt-auto">
-                        <button class="btn w-100 btn-pims" style="background-color: #e5e5be; font-size: 14px;">Create
-                            New Workspace <i class="bi bi-plus-circle ms-2"></i></button>
+                        <button @click="goToBoard" class="btn w-100 btn-pims" style="background-color: #e5e5be; font-size: 14px;">
+                            Create New Workspace <i class="bi bi-plus-circle ms-2"></i>
+                        </button>
                     </div>
                 </div>
                 <nav>
                     <ul class="nav flex-column min-vh-100 px-3">
                         <li class="nav-link p-0">
-                            <a :class="{ 'nav-link' : true, 'active': route().current('dashboard') }" href="/dashboard">
+                            <a :class="{ 'nav-link': true, 'active': route().current('dashboard') }" href="/dashboard">
                                 <i class="bi bi-house-door me-2"></i> Dashboard
                             </a>
                         </li>
@@ -62,6 +97,13 @@ onMounted(() => {
                                 <i class="bi bi-eye me-2"></i> Preview
                             </a>
                         </li>
+                        <li v-if="canManageRoles" class="nav-item my-2">
+                            <a :class="{ 'nav-link': true, 'active': route().current('roles.index') }"
+                                href="/roles">
+                                <i class="bi bi-shield-lock me-2"></i> Role Management
+                            </a>
+                        </li>
+
                         <li class="nav-item my-2">
                             <h5 class="text-white">Your Workspaces</h5>
                             <ul class="nav flex-column">
@@ -103,13 +145,31 @@ onMounted(() => {
                                 <i :class="isSidebarOpen ? 'bi bi-list' : 'bi bi-list'" style="font-size: 20px;"></i>
                             </button>
                             <div>
-                                <h1 class="fs-5 fw-bold mb-0" style="color:#42275a;">Dashboard</h1>
+                                <h1 class="fs-5 fw-bold mb-0" style="color:#42275a;">{{ pageTitle }}</h1>
                                 <p class="mb-0" style="color: #42275a;">{{ currentDate }}</p>
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <i class="bi bi-envelope fs-5" style="color: #42275a;"></i>
-                            <i class="bi bi-bell fs-5" style="color: #42275a;"></i>
+                            <div class="position-relative">
+                                <button class="btn btn-light p-0" id="notificationDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="bi bi-bell fs-5" style="color: #42275a;"></i>
+                                    <span v-if="unreadCount > 0"
+                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ unreadCount }}
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+                                    <li v-if="!props.notifications || props.notifications.length === 0"
+                                        class="dropdown-item">No notifications
+                                    </li>
+                                    <li v-for="notification in props.notifications" :key="notification.id"
+                                        class="dropdown-item">
+                                        {{ JSON.parse(notification.data).message }}
+                                    </li>
+                                </ul>
+                            </div>
                             <div class="dropdown">
                                 <button class="btn btn-light d-flex align-items-center gap-2" id="userDropdown"
                                     data-bs-toggle="dropdown">
@@ -156,9 +216,10 @@ aside {
 nav.navbar {
     background-color: #aa076b;
 } */
- .nav-link {
+.nav-link {
     color: white;
- }
+}
+
 .nav-link.active {
     background-color: #EBE2F3;
     padding: 10px 20px;
@@ -172,6 +233,10 @@ nav.navbar {
     /* Emphasized Text */
 }
 
+.nav-link.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
 
 /* Text Styling for Contrast */
 .text-white {

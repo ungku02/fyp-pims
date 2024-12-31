@@ -20,12 +20,16 @@ class Workspace extends Model
 
     public function project()
     {
-    return $this->hasMany(Project::class, 'workspace_id', 'id');
-
+        return $this->hasMany(Project::class, 'workspace_id', 'id');
     }
 
     public function members()
     {
         return $this->hasMany(WorkspaceMembers::class, 'workspace_id', 'id')->with('users');
+    }
+
+    public function users()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

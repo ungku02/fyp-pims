@@ -92,6 +92,52 @@ watch(modalVisible, (newValue) => {
 watch(deleteModalVisible, (newValue) => {
     document.getElementById('deleteModal').inert = !newValue;
 });
+
+const roles = ref([]);
+const roleForm = useForm({
+    name: '',
+});
+
+const fetchRoles = async () => {
+    const response = await axios.get(route('roles.index'));
+    roles.value = response.data;
+};
+
+const addRole = () => {
+    roleForm.post(route('roles.store'), {
+        onSuccess: () => {
+            roleForm.reset();
+            fetchRoles();
+        },
+        onError: () => {
+            console.error('Role creation failed:', roleForm.errors);
+        },
+    });
+};
+
+const updateRole = (role) => {
+    roleForm.put(route('roles.update', { role: role.id }), {
+        onSuccess: () => {
+            fetchRoles();
+        },
+        onError: () => {
+            console.error('Role update failed:', roleForm.errors);
+        },
+    });
+};
+
+const deleteRole = (role) => {
+    router.delete(route('roles.destroy', { role: role.id }), {
+        onSuccess: () => {
+            fetchRoles();
+        },
+        onError: () => {
+            console.error('Role deletion failed');
+        },
+    });
+};
+
+fetchRoles();
 </script>
 
 <template>
@@ -103,8 +149,10 @@ watch(deleteModalVisible, (newValue) => {
                 {{ workspace.title }}</h5>
             <h4 style="color:#2A4965; margin-top: 5px;">{{ workspace.description }}</h4>
             <div class="flex justify-content-end fs-5">
-                <button @click="openEditModal(workspace)" data-bs-toggle="modal" data-bs-target="#editModal"> <i class="bi bi-pencil-square me-2"></i> </button>
-                <button @click="openDeleteModal" data-bs-toggle="modal" data-bs-target="#deleteModal"> <i class="bi bi-trash me-2"></i> </button>
+                <button @click="openEditModal(workspace)" data-bs-toggle="modal" data-bs-target="#editModal"> <i
+                        class="bi bi-pencil-square me-2"></i> </button>
+                <button @click="openDeleteModal" data-bs-toggle="modal" data-bs-target="#deleteModal"> <i
+                        class="bi bi-trash me-2"></i> </button>
             </div>
         </header>
         <div class="row g-4">
@@ -194,7 +242,8 @@ watch(deleteModalVisible, (newValue) => {
     </MembersLayout>
 
     <!-- Edit Workspace Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" :inert="!modalVisible" :aria-hidden="!modalVisible">
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" :inert="!modalVisible"
+        :aria-hidden="!modalVisible">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -226,7 +275,8 @@ watch(deleteModalVisible, (newValue) => {
     </div>
 
     <!-- Delete Workspace Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" :inert="!deleteModalVisible" :aria-hidden="!deleteModalVisible">
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+        :inert="!deleteModalVisible" :aria-hidden="!deleteModalVisible">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -235,11 +285,37 @@ watch(deleteModalVisible, (newValue) => {
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete this workspace? Please enter the workspace title to confirm.</p>
-                    <TextInput id="deleteTitle" type="text" class="mt-1 block w-full" v-model="deleteTitle" required autofocus />
+                    <TextInput id="deleteTitle" type="text" class="mt-1 block w-full" v-model="deleteTitle" required
+                        autofocus />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Role Modal -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" :inert="!modalVisible" :aria-hidden="!modalVisible">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="roleModalLabel">Add/Edit Role</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addRole">
+                        <div class="mb-3">
+                            <InputLabel for="roleName" value="Role Name" />
+                            <TextInput id="roleName" type="text" class="mt-1 block w-full" v-model="roleForm.name" required autofocus autocomplete="name" />
+                            <InputError class="mt-2" :message="roleForm.errors.name" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn create-btn">Save Role</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

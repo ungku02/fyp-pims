@@ -19,4 +19,14 @@ class Role extends Model
     {
         return $this->hasMany(UserRole::class, 'role_id', 'id');
     }
+
+     public function user()
+     {
+     return $this->hasMany(User::class);
+     }
+
+    public function isOwner($userId)
+    {
+        return $this->workspace->user_id === $userId;
+    }
 }

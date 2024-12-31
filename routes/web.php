@@ -11,8 +11,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\RoleController;
 use App\Models\Workspace;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\EventController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -24,14 +26,25 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $workspaces = Workspace::with('project', 'members')
-    ->select('id', 'title', 'description')
+    $workspaces = Workspace::with('project', 'members', 'users')
+    ->select('id', 'title', 'description', 'user_id')
     ->whereHas('members', function ($query) {
         $query->where('user_id', auth()->id());
     })
+    ->orWhere('user_id', auth()->id())
     ->get();
 
-    return Inertia::render('Dashboard', ['workspaces' => $workspaces]);
+    if (auth()->user()->roles()->first() != null) {
+        $role = auth()->user()->roles()->first();
+    } else {
+        $role = null;
+    }
+
+      $events = auth()->user()->events;
+      $notifications = auth()->user()->notifications;
+    // dd($workspaces);
+
+    return Inertia::render('Dashboard', ['workspaces' => $workspaces, 'notifications' => $notifications, 'role' => $role, 'events' => $events]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/board', [WorkspaceController::class, 'index'])->name('board');
@@ -73,6 +86,19 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    // Route::middleware('can:manageRoles,App\Models\Workspace')->group(function () {
+        Route::post('/roles/store', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::get('/roles/{role}/users', [RoleController::class, 'getUsers'])->name('roles.users');
+        Route::post('/roles/{role}/reassign', [RoleController::class, 'reassignRole'])->name('roles.reassign');
+    // });
+
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
 });
 
 require __DIR__.'/auth.php';

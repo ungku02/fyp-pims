@@ -20,10 +20,12 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $workspaces = Workspace::select('id', 'title', 'description')->where('user_id', auth()->id())->get();
+           $notifications = auth()->user()->notifications;
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'workspaces' => $workspaces
+            'workspaces' => $workspaces,
+            'notifications' => $notifications
         ]);
     }
 

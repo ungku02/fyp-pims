@@ -84,20 +84,23 @@ function submit() {
 
     <Head title="Board" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :notifications="notifications">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Workspace</h2>
         </template>
 
-        <div class="py-12">
+        <div>
+            <h3 style="text-align: center; font-weight: bold;background: linear-gradient(to right,  #6C5B7B, #C2B9CB); color:#fff; max-width:300px; padding: 5px; border-radius: 20px;"
+                class="font-semibold text-xl text-black-500 leading-tight ms-5 mb-4">Workspace List</h3>
             <div class="max-w-mx-auto sm:px-6 lg:px-8 ">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
+                    style="border-radius: 10px; border: 1px solid #6C5B7B;">
                     <div>
-                        <div  class="d-flex flex-wrap container" v-if="workspaces && workspaces.length > 0">
+                        <div class="d-flex flex-wrap container" v-if="workspaces && workspaces.length > 0">
                             <div class="cols-7 md-8" v-for="workspace in workspaces" :key="workspace.id">
                                 <TaskCard :style="{ marginTop: '30px' }" :key="workspace.id" :title="workspace.title"
-                                    :description="workspace.description"
-                                    :link="route('project/show-project', { id: workspace.id })" :workspace="workspace" />
+                                    :description="workspace.description" :link="`/show/workspace/${workspace.id}`"
+                                    :workspace="workspace" />
                             </div>
                         </div>
                         <div v-else class="text-center w-100 mt-5">
@@ -151,7 +154,7 @@ function submit() {
                                 <!-- <input type="text" name="description" v-model="form.description" class="col-form-label"> -->
                             </div>
                             <div class="mb-3">
-                                
+
                                 <div v-if="form.members.length > 0"
                                     class="added-members-tooltip mt-2 p-2 bg-light border rounded">
                                     <p class="text-muted mb-1">Members added:</p>
@@ -220,14 +223,14 @@ function submit() {
     background-color: #002244;
     color: white;
 }
-.create-btn{
+
+.create-btn {
     border: solid 1px #492A65;
     color: #492A65;
 }
 
-.create-btn:hover{
+.create-btn:hover {
     background-color: #5E3681;
     color: #fff;
 }
-
 </style>

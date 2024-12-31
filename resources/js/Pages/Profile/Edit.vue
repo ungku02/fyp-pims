@@ -4,8 +4,9 @@ import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
     mustVerifyEmail: {
         type: Boolean,
     },
@@ -14,13 +15,18 @@ defineProps({
     },
     workspaces: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
+    notifications : { type: Array, default: () => [] },
 });
+
+const unreadCount = computed(() =>
+    props.notifications.filter((notification) => !notification.read).length
+);
 </script>
 
 <template>
     <Head title="Profile" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :notifications="notifications">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>
         </template>

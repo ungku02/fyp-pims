@@ -11,13 +11,41 @@ use Illuminate\Validation\Rules;
 use Illuminate\Http\RedirectResponse;
 use App\Models\UserRole;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Mail;
 
 class WorkspaceController extends Controller
 {
     public function index()
     {
-        $workspaces = Workspace::select('id', 'title', 'description')->where('user_id', auth()->id())->get();
-        return Inertia::render('Board', ['workspaces' => $workspaces]);
+         $workspaces = Workspace::with('project', 'members', 'users')
+         ->select('id', 'title', 'description', 'user_id')
+         ->whereHas('members', function ($query) {
+         $query->where('user_id', auth()->id());
+         })
+         ->orWhere('user_id', auth()->id())
+         ->get();
+
+         if (auth()->user()->roles()->first() != null) {
+         $role = auth()->user()->roles()->first();
+         } else {
+         $role = null;
+         }
+
+         $notifications = auth()->user()->notifications;
+        return Inertia::render('Board', ['workspaces' => $workspaces, 'notifications' => $notifications, 'role' => $role]);
+    }
+
+    public function dashboard()
+    {
+         $workspaces = Workspace::with('project', 'members', 'users')
+         ->select('id', 'title', 'description', 'user_id')
+         ->whereHas('members', function ($query) {
+         $query->where('user_id', auth()->id());
+         })
+         ->get();
+         // dd($workspaces);
+
+         return Inertia::render('Dashboard', ['workspaces' => $workspaces]);
     }
 
     public function create(Request $request) : RedirectResponse 
@@ -53,6 +81,12 @@ class WorkspaceController extends Controller
                 'type' => 'workspace',
                 'data' => json_encode(['message' => 'You have been added to a new workspace: ' . $workspace->title]),
             ]);
+
+            // Send email notification to the user
+            Mail::raw('You have been added to a new workspace: ' . $workspace->title, function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('New Workspace Added');
+            });
         }
     
         // Redirect to the 'board' route
