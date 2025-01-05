@@ -36,4 +36,9 @@ class UserRole extends Model
     {
         return $this->belongsTo(Project::class, 'project_id', 'id');
     }
+
+    public function swapTasks()
+    {
+        return $this->hasMany(SwapTask::class, 'old_user_id', 'user_id');
+    }
 }

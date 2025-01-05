@@ -15,10 +15,7 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @var array
      */
-    protected $policies = [
-        Workspace::class => WorkspacePolicy::class,
-    ];
-
+   
     /**
      * Register any authentication / authorization services.
      *

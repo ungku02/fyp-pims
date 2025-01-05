@@ -1,7 +1,7 @@
 <script setup>
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, watch } from 'vue';
 import ProjectLayout from '@/Layouts/ProjectLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -35,6 +35,8 @@ const roles = ref([]); // Fetch roles from the server or define them here
 const form = useForm({
     memberEmail: '',
     selectedRole: '',
+    title: '',
+    description: '',
     errors: {}
 });
 
@@ -53,6 +55,57 @@ const confirmAddMember = () => {
     addMemberModal.hide();
 };
 
+const modalVisible = ref(false);
+const deleteModalVisible = ref(false);
+const deleteTitle = ref('');
+
+const openEditModal = (project) => {
+    form.title = project.title || '';
+    form.description = project.description || '';
+    modalVisible.value = true;
+};
+
+const submitEdit = () => {
+    form.put(route('project.update', { id: props.project.id }), {
+        onSuccess: () => {
+            form.reset();
+            modalVisible.value = false;
+            location.reload();
+        },
+        onError: () => {
+            console.error('Submission failed:', form.errors);
+        },
+    });
+};
+
+const openDeleteModal = () => {
+    deleteModalVisible.value = true;
+};
+
+const confirmDelete = () => {
+    if (deleteTitle.value === props.project.title) {
+        router.delete(route('project.destroy', { id: props.project.id }), {
+            onSuccess: () => {
+                deleteModalVisible.value = false;
+                location.reload();
+            },
+            onError: () => {
+                console.error('Deletion failed');
+            },
+        });
+    } else {
+        alert('Project title does not match.');
+    }
+};
+
+// Watch modal visibility to set inert attribute correctly
+watch(modalVisible, (newValue) => {
+    document.getElementById('editModal').inert = !newValue;
+});
+watch(deleteModalVisible, (newValue) => {
+    document.getElementById('deleteModal').inert = !newValue;
+});
+
 console.log('Project prop in Show.vue:', props.project);
 </script>
 
@@ -64,8 +117,10 @@ console.log('Project prop in Show.vue:', props.project);
                 {{ project.title }}</h5>
             <p style="color:#2A4965; margin-top: 5px;">{{ project.description }}</p>
             <div class="flex justify-content-end fs-5">
-                <button> <i class="bi bi-pencil-square  me-2"></i> </button>
-                <button> <i class="bi bi-trash me-2"></i> </button>
+                <button @click="openEditModal(project)" data-bs-toggle="modal" data-bs-target="#editModal"> <i
+                        class="bi bi-pencil-square me-2"></i> </button>
+                <button @click="openDeleteModal" data-bs-toggle="modal" data-bs-target="#deleteModal"> <i
+                        class="bi bi-trash me-2"></i> </button>
             </div>
         </header>
         <div class="row g-4 mt-3">
@@ -139,8 +194,6 @@ console.log('Project prop in Show.vue:', props.project);
                                     +{{ project.user_role.length - 3 }}
                                 </div>
                             </div>
-
-
                         </div>
                         <div class="d-flex align-items-center m-2">
                             <p class="mb-0 me-1" style="font-size: 12px;">Progress:</p>
@@ -199,6 +252,61 @@ console.log('Project prop in Show.vue:', props.project);
                                 <button type="submit" class="btn btn-grad-outline">Add Member</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Project Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" :inert="!modalVisible"
+            :aria-hidden="!modalVisible">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="editModalLabel">Edit Project</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="submitEdit">
+                            <div class="mb-3">
+                                <InputLabel for="editTitle" value="Title" />
+                                <TextInput id="editTitle" type="text" class="mt-1 block w-full" v-model="form.title"
+                                    required autofocus autocomplete="title" />
+                                <!-- <InputError class="mt-2" :message="form.errors.title" /> -->
+                            </div>
+                            <div class="mb-3">
+                                <InputLabel for="editDescription" value="Description" />
+                                <textarea id="editTitle" class="mt-1 block w-full" v-model="form.description" required
+                                    autofocus autocomplete="title" rows="4"></textarea>
+                                <!-- <InputError class="mt-2" :message="form.errors.description" /> -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn create-btn">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Project Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            :inert="!deleteModalVisible" :aria-hidden="!deleteModalVisible">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="deleteModalLabel">Delete Project</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this project? Please enter the project title to confirm.</p>
+                        <TextInput id="deleteTitle" type="text" class="mt-1 block w-full" v-model="deleteTitle" required
+                            autofocus />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
                     </div>
                 </div>
             </div>
@@ -304,6 +412,16 @@ console.log('Project prop in Show.vue:', props.project);
 
 .btn-grad-outline:hover {
     background-color: #6C5B7B;
+    color: #fff;
+}
+
+.create-btn {
+    border: solid 1px #6c5b7b;
+    color: #6c5b7b;
+}
+
+.create-btn:hover {
+    background-color: #6c5b7b;
     color: #fff;
 }
 

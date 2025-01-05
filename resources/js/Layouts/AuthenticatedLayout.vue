@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link, usePage } from '@inertiajs/vue3'; // Import the Link and useRoute components
+import axios from 'axios';
 
 const { props } = usePage();
 const workspaces = ref(props.workspaces);
@@ -30,6 +31,10 @@ const canManageRoles = computed(() => {
     return role.value.name === 'Project Manager' || role.value.name === 'System Analyst';
 });
 
+const canManageUsers = computed(() => {
+    return role.value.name === 'Project Manager';
+});
+
 const pageTitle = computed(() => {
     if (route().current('dashboard'))
         return 'Dashboard';
@@ -45,9 +50,26 @@ const pageTitle = computed(() => {
         return 'Role Management';
     else if (route().current('show.workspace'))
         return 'Workspace';
+    else if (route().current('users.index'))
+        return 'User Management';
+    else if (route().current('users.filter'))
+        return 'User Management';
     else
         return 'PIMS';
 });
+
+const markAsRead = async (notificationId) => {
+    try {
+        await axios.patch(route('notifications.read', { id: notificationId }));
+        // Update the notification status locally
+        const notification = props.notifications.find(n => n.id === notificationId);
+        if (notification) {
+            notification.read = true;
+        }
+    } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+    }
+};
 
 onMounted(() => {
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
@@ -65,7 +87,8 @@ onMounted(() => {
                     <!-- <img :src="asset('img/logo4.png')" alt="PIMS Logo"
                         style="height: 100px; width: 150px; margin-top: 0; padding: 0;"> -->
                     <div class="p-3 mt-auto">
-                        <button @click="goToBoard" class="btn w-100 btn-pims" style="background-color: #e5e5be; font-size: 14px;">
+                        <button @click="goToBoard" class="btn w-100 btn-pims"
+                            style="background-color: #e5e5be; font-size: 14px;">
                             Create New Workspace <i class="bi bi-plus-circle ms-2"></i>
                         </button>
                     </div>
@@ -82,25 +105,33 @@ onMounted(() => {
                                 <i class="bi bi-person-workspace me-2"></i> Workspaces
                             </a>
                         </li>
-                        <li class="nav-item my-2">
+                        <!-- <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('swap.tasks') }" href="/leads">
                                 <i class="bi bi-people me-2"></i> Swap Tasks
                             </a>
                         </li>
-                        <li class="nav-item my-2">
-                            <a :class="{ 'nav-link': true, 'active': route().current('settings') }" href="/settings">
-                                <i class="bi bi-gear me-2"></i> Settings
-                            </a>
-                        </li>
+                       
                         <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('preview') }" href="/preview">
                                 <i class="bi bi-eye me-2"></i> Preview
                             </a>
+                        </li> -->
+                        <li v-if="canManageRoles" class="nav-item my-2">
+                            <a :class="{ 'nav-link': true, 'active': route().current('roles.index') }" href="/roles">
+                                <i class="bi bi-shield-lock me-2"></i> Role Management
+                            </a>
                         </li>
                         <li v-if="canManageRoles" class="nav-item my-2">
-                            <a :class="{ 'nav-link': true, 'active': route().current('roles.index') }"
-                                href="/roles">
-                                <i class="bi bi-shield-lock me-2"></i> Role Management
+                            <a :class="{
+                                'nav-link': true,
+                                'active': route().current('users.index') || route().current('users.filter')
+                                }" href="/users">
+                                <i class="bi bi-people me-2"></i> User Management
+                            </a>
+                        </li>
+                        <li v-else class="nav-item my-2">
+                            <a :class="{ 'nav-link': true, 'active': route().current('settings') }" href="/settings">
+                                <i class="bi bi-gear me-2"></i> Settings
                             </a>
                         </li>
 
@@ -165,8 +196,10 @@ onMounted(() => {
                                         class="dropdown-item">No notifications
                                     </li>
                                     <li v-for="notification in props.notifications" :key="notification.id"
-                                        class="dropdown-item">
-                                        {{ JSON.parse(notification.data).message }}
+                                        class="dropdown-item" @click="markAsRead(notification.id)">
+                                        {{ notification.data.message }}
+                                        <span v-if="!notification.read" class="badge bg-primary ms-2">new</span>
+                                        <span v-else class="badge bg-secondary ms-2">seen</span>
                                     </li>
                                 </ul>
                             </div>

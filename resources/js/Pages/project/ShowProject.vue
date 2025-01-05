@@ -2,15 +2,14 @@
 
     <Head title="Project" />
 
-    <AuthenticatedLayout>
+    <MembersLayout :workspace="workspace" :workspaces="workspaces" :notifications="notifications">
+
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Project</h2>
         </template>
 
         <!-- Main Container -->
         <div class="cmax-w-mx-auto sm:px-6 lg:px-8 ">
-            <!-- Sidebar -->
-            <SideBar class="sidebar-container me-4" />
 
             <!-- Main Content Area -->
             <div class="flex-grow">
@@ -25,10 +24,10 @@
 
                     <!-- Project Cards -->
                     <div class="row">
-                        <div v-if="hasProjects" class="d-flex flex-wrap justify-content-start">
-                            <div v-for="project in projects" :key="project.id" class="col-md-3 mb-3">
+                        <!-- <div v-if="hasProjects" class="d-flex flex-wrap justify-content-start"> -->
+                            <div v-for="project in props.projects" :key="project.id" class="col-md-3 mb-3">
                                 <div class="card  project-card me-5"
-                                    @click="goToKanban(project.id, `/img/${project.image}`)" style="width: 300px;">
+                                    @click="goToKanban(project.id)" style="width: 300px;">
                                     <img :src="`/img/${project.image}`" class="card-img-top project-image"
                                         alt="Project Image" style="width: 400px; height:200px;">
                                     <div class="card-body">
@@ -37,10 +36,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div v-else class="text-center mt-4">
+                        <!-- </div> -->
+                        <!-- <div v-else class="text-center mt-4">
                             <p class="text-muted">No project created yet</p>
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- Add Project Button -->
@@ -180,12 +179,12 @@
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </MembersLayout>
+
 </template>
 
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SideBar from '@/Components/SideBar.vue';
+import MembersLayout from '@/Layouts/MembersLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -194,10 +193,31 @@ import { router, useForm } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
 const props = defineProps({
-    projects: Array,
-    hasProjects: Boolean,
-    workspace: Object,
-    roles: Array
+    workspace: {
+        type: Object,
+        required: true
+    },
+    workspaces: {
+        type: Array,
+        default: () => [],
+    },
+    projects: {
+        type: Array,
+        default: () => [],
+    },
+    members: {
+        type: Object,
+        required: true,
+    },
+    notifications: {
+        type: Array,
+        default: () => [],
+    },
+
+    roles: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const modalVisible = ref(false);
@@ -221,10 +241,8 @@ const templates = [
     '/img/template-4.png',
 ];
 
-function goToKanban(projectId, imagePath) {
-    router.visit(`/kanban`, {
-        data: { project: projectId, background: imagePath },
-    });
+function goToKanban(projectId) {
+    window.location.href = route('project/show', { id: projectId });
 }
 
 async function searchUser() {

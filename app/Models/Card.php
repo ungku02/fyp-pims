@@ -35,4 +35,9 @@ class Card extends Model
     {
         return $this->belongsTo(UserRole::class, 'user_project_id', 'user_id');
     }
+
+    public function swapTasks()
+    {
+        return $this->hasMany(SwapTask::class, 'card_id', 'id');
+    }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import MembersLayout from '@/Layouts/MembersLayout.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -41,6 +41,7 @@ const toggleAvailability = (member) => {
 const form = useForm({
     title: '',
     description: '',
+    email: '',
 });
 const modalVisible = ref(false);
 const deleteModalVisible = ref(false);
@@ -85,12 +86,105 @@ const confirmDelete = () => {
     }
 };
 
+const deleteMemberModalVisible = ref(false);
+const memberToDelete = ref(null);
+
+const openDeleteMemberModal = (member) => {
+    memberToDelete.value = member.user_id;
+    deleteMemberModalVisible.value = true;
+};
+
+const confirmDeleteMember = () => {
+    if (memberToDelete.value) {
+        router.delete(route('workspace.deleteMember', { workspaceId: props.workspace.id, memberId: memberToDelete.value}), {
+            onSuccess: () => {
+                deleteMemberModalVisible.value = false;
+                location.reload();
+            },
+            onError: (errors) => {
+                console.error('Deletion failed:', errors);
+            },
+        });
+    }
+};
+
+const addMemberModalVisible = ref(false);
+const searchResult = ref(null);
+
+const openAddMemberModal = () => {
+    addMemberModalVisible.value = true;
+};
+
+const searchUser = async () => {
+    if (form.email) {
+        try {
+            const response = await axios.post('/search-user', { email: form.email });
+            if (response.data && response.data.email) {
+                searchResult.value = response.data;
+            } else {
+                searchResult.value = 'not_found';
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                searchResult.value = 'not_found';
+            } else {
+                console.error("An error occurred:", error);
+                searchResult.value = null;
+            }
+        }
+    } else {
+        searchResult.value = 'not_found';
+    }
+};
+
+const addMember = () => {
+    if (searchResult.value && searchResult.value !== 'not_found') {
+        form.members.push({
+            email: searchResult.value.email,
+            name: searchResult.value.name,
+        });
+        form.email = '';
+        searchResult.value = null;
+    }
+};
+
+const submitAddMember = () => {
+    form.post(route('workspace.addMember', { id: props.workspace.id }), {
+        onSuccess: () => {
+            form.reset();
+            addMemberModalVisible.value = false;
+            location.reload();
+        },
+        onError: () => {
+            console.error('Submission failed:', form.errors);
+        },
+    });
+};
+
 // Watch modal visibility to set inert attribute correctly
 watch(modalVisible, (newValue) => {
-    document.getElementById('editModal').inert = !newValue;
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.inert = !newValue;
+    }
 });
 watch(deleteModalVisible, (newValue) => {
-    document.getElementById('deleteModal').inert = !newValue;
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.inert = !newValue;
+    }
+});
+watch(deleteMemberModalVisible, (newValue) => {
+    const deleteMemberModal = document.getElementById('deleteMemberModal');
+    if (deleteMemberModal) {
+        deleteMemberModal.inert = !newValue;
+    }
+});
+watch(addMemberModalVisible, (newValue) => {
+    const addMemberModal = document.getElementById('addMemberModal');
+    if (addMemberModal) {
+        addMemberModal.inert = !newValue;
+    }
 });
 
 const roles = ref([]);
@@ -161,8 +255,8 @@ fetchRoles();
                 <div class="p-4 rounded"
                     style="background-color: #ffffff; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);">
                     <h3 class="mb-3" style="color: #2A4965; font-weight: bold;">Workspace's Members</h3>
-                    <button @click="openAddMemberModal" class="btn btn-grad-outline mb-3"><i
-                            class="bi bi-person-plus-fill"></i>Member</button>
+                    <button @click="openAddMemberModal" class="btn btn-grad-outline mb-3" data-bs-toggle="modal"
+                        data-bs-target="#addMemberModal"><i class="bi bi-person-plus-fill"></i>Member</button>
                     <table class="table custom-table">
                         <thead>
                             <tr>
@@ -178,16 +272,30 @@ fetchRoles();
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ member.users.name }}</td>
                                 <td>{{ member.users.email }}</td>
-                                <td class="text-center">
-                                    <button @click="toggleAvailability(member)"
-                                        :class="{ 'btn-availability': true, 'active': member.availability === 'available', 'inactive': member.availability === 'unavailable' }">
-                                        {{ member.availability }}
-                                    </button>
+                                <td>
+                                    <div v-if="member.users.availability === 'available'" style=" color: beige;
+                                            background-color: green;
+                                            border-radius: 20px;
+                                            text-transform: capitalize;
+                                            text-align: center;
+                                            padding:3px;">
+                                        {{ member.users.availability }}
+                                    </div>
+                                    <div v-else="member.users.availability === 'unavailable'" style="color: rgb(255, 255, 255);
+                                            background-color: red;
+                                            border-radius: 20px;
+                                            text-transform: capitalize;
+                                            text-align: center;">
+                                        {{ member.users.availability }}
+                                    </div>
                                 </td>
+
                                 <td class="flex justify-content-center">
 
-                                    <button class="btn btn-sm btn-grad-outline text-center">
-                                        <i class="bi bi-pencil"></i>
+                                    <button @click="openDeleteMemberModal(member)"
+                                        class="btn btn-delete btn-sm btn-grad-outline text-center"
+                                        data-bs-toggle="modal" data-bs-target="#deleteMemberModal">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
                             </tr>
@@ -260,8 +368,9 @@ fetchRoles();
                         </div>
                         <div class="mb-3">
                             <InputLabel for="editDescription" value="Description" />
-                            <TextInput id="editDescription" type="text" class="mt-1 block w-full"
-                                v-model="form.description" required autofocus autocomplete="description" />
+                            <textarea id="editDescription" type="text" class="mt-1 block w-full"
+                                v-model="form.description" required autofocus autocomplete="description"
+                                rows="4"></textarea>
                             <!-- <InputError class="mt-2" :message="form.errors.description" /> -->
                         </div>
                         <div class="modal-footer">
@@ -296,24 +405,48 @@ fetchRoles();
         </div>
     </div>
 
-    <!-- Add/Edit Role Modal -->
-    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" :inert="!modalVisible" :aria-hidden="!modalVisible">
+    <!-- Delete Member Modal -->
+    <div class="modal fade" id="deleteMemberModal" tabindex="-1" aria-labelledby="deleteMemberModalLabel"
+        :inert="!deleteMemberModalVisible" :aria-hidden="!deleteMemberModalVisible" v-if="deleteMemberModalVisible">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="roleModalLabel">Add/Edit Role</h1>
+                    <h1 class="modal-title fs-5" id="deleteMemberModalLabel">Delete Member</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form @submit.prevent="addRole">
+                    <p>Are you sure you want to delete this member?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @click="confirmDeleteMember">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel"
+        :inert="!addMemberModalVisible" :aria-hidden="!addMemberModalVisible" v-if="addMemberModalVisible">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addMemberModalLabel">Add Workspace Member</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="submitAddMember">
                         <div class="mb-3">
-                            <InputLabel for="roleName" value="Role Name" />
-                            <TextInput id="roleName" type="text" class="mt-1 block w-full" v-model="roleForm.name" required autofocus autocomplete="name" />
-                            <InputError class="mt-2" :message="roleForm.errors.name" />
+                            <InputLabel for="memberEmail" value="Member Email" />
+                            <TextInput id="memberEmail" type="email" class="mt-1 block w-full" v-model="form.email"
+                                @input="searchUser" required autofocus autocomplete="email" />
+                            <InputError class="mt-2" :message="form.errors.email" />
                         </div>
+                        <div v-if="searchResult === 'not_found'" class="text-danger">User not found.</div>
+                        <div v-else-if="searchResult" class="text-success">User found: {{ searchResult.name }}</div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn create-btn">Save Role</button>
+                            <button type="submit" class="btn create-btn">Add Member</button>
                         </div>
                     </form>
                 </div>
@@ -367,6 +500,15 @@ fetchRoles();
     color: #6C5B7B;
     border-radius: 30px;
 }
+.create-btn {
+    border: solid 1px #6c5b7b;
+    color: #6c5b7b;
+}
+
+.create-btn:hover {
+    background-color: #6c5b7b;
+    color: #fff;
+}
 
 .btn-grad:hover {
     background-color: #6C5B7B;
@@ -384,29 +526,15 @@ fetchRoles();
     color: #fff;
 }
 
-.btn-availability {
-    border: none;
-    background: none;
-    cursor: pointer;
-    padding: 0;
-    font-size: 14px;
-    font-weight: bold;
+
+.btn-delete {
+    color: rgb(175, 100, 100);
+    border: 1px solid rgb(175, 100, 100)
 }
 
-.btn-availability.active {
-    color: beige;
-    background-color: green;
-    padding: 5px;
-    border-radius: 20px;
-    text-transform: capitalize;
-}
-
-.btn-availability.inactive {
+.btn-delete:hover {
     color: rgb(255, 255, 255);
-    background-color: red;
-    padding: 5px;
-    border-radius: 20px;
-    text-transform: capitalize;
+    background-color: rgb(175, 100, 100);
 }
 
 .pagination {

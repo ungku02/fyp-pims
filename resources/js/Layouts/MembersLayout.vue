@@ -84,16 +84,19 @@ onMounted(() => {
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a :class="{ 'nav-link': true, 'active': true }" :href="route('board')">
+                            <a :class="{ 'nav-link': true, 'active': route().current('workspace.show') }"
+                                :href="`/show/workspace/${props.workspace.id}`">
                                 <i class="bi bi-person-workspace me-2"></i> Workspaces
                             </a>
                         </li>
-
                         <li class="nav-item my-2">
-                            <a :class="{ 'nav-link': true, 'active': route().current('swap.tasks') }" href="/leads">
-                                <i class="bi bi-people me-2"></i> Swap Tasks
+                            <a :class="{ 'nav-link': true, 'active': route().current('project/show-project')}"
+                                :href="`/show/project/${props.workspace.id}`">
+                                <i class="bi bi-people me-2"></i> Projects
                             </a>
                         </li>
+
+
                         <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('settings') }" href="/settings">
                                 <i class="bi bi-gear me-2"></i> Settings
@@ -105,7 +108,7 @@ onMounted(() => {
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <h5 style="color:white;">Your Workspaces</h5>
+                            <h5 style="color:white;">Your are in:</h5>
                             <ul class="nav flex-column">
                                 <li class="nav-item d-flex align-items-center gap-2 my-2">
                                     <!-- Workspace Icon -->
@@ -183,7 +186,7 @@ onMounted(() => {
                                     </li>
                                     <li v-for="notification in props.notifications" :key="notification.id"
                                         class="dropdown-item">
-                                        {{ JSON.parse(notification.data).message }}
+                                        {{ notification.data.message }}
                                         <br>
                                         {{ formatDate(notification.created_at) }}
                                     </li>
@@ -263,15 +266,15 @@ nav.navbar {
     background-color: #e5e5be;
     color: #aa076b;
 }
+
 .position-absolute {
     position: absolute;
-    top: -10px; /* Adjust for proper positioning */
-    left: 20px; /* Adjust for alignment */
+    top: -10px; 
+    left: 20px; 
 }
 
 .badge {
     font-size: 0.8rem;
     padding: 0.2em 0.4em;
 }
-
 </style>

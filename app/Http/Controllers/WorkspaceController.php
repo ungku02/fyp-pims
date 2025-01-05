@@ -115,23 +115,16 @@ class WorkspaceController extends Controller
         ]);
     }
 
-    public function addMember(Request $request, $id): RedirectResponse
+    public function addMember(Request $request, $id)
     {
         $validatedData = $request->validate([
             'email' => 'required|email|exists:users,email',
-            'role_id' => 'required|exists:roles,id',
         ]);
 
         $user = User::where('email', $validatedData['email'])->first();
         $workspace = Workspace::find($id);
 
         if ($workspace && $user) {
-            UserRole::create([
-                'user_id' => $user->id,
-                'role_id' => $validatedData['role_id'],
-                'project_id' => $workspace->project->id,
-            ]);
-
             WorkspaceMembers::create([
                 'user_id' => $user->id,
                 'workspace_id' => $workspace->id,
@@ -166,5 +159,28 @@ class WorkspaceController extends Controller
 
         return redirect()->route('dashboard');
     }
+
+    public function deleteMember(Request $request, $workspaceId, $memberId): RedirectResponse
+    {
+        $user = auth()->user();
+        $role = $user->roles()->first();
+
+        if ($role && $role->name === 'Project Manager') {
+            // Ensure you're matching on the composite keys: workspace_id and user_id
+            $deleted = WorkspaceMembers::where('workspace_id', $workspaceId)
+            ->where('user_id', $memberId)
+            ->delete();
+
+            if ($deleted) {
+                return redirect()->back()->with('success', 'Member removed successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Failed to remove member. The record may not exist.');
+            }
+
+        } else {
+            return redirect()->back()->with('error', 'Only project managers can delete workspace members.');
+        }
+    }
+
     
 }

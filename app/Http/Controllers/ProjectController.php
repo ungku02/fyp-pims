@@ -42,20 +42,30 @@ class ProjectController extends Controller
 
     public function showProject($id)
     {
-        $workspace = Workspace::with('project')->findOrFail($id);
-        
+       $workspace = Workspace::with(['members.users', 'members', 'project'])->find($id);
+       $workspaces = Workspace::with('project', 'members')
+       ->select('id', 'title', 'description')
+       ->whereHas('members', function ($query) {
+       $query->where('user_id', auth()->id());
+       })
+       ->get();
+
+       $members = $workspace->members()->paginate(5); // Paginate members
+       $notifications = auth()->user()->notifications; // Get user notifications
 
         // Check if the workspace has projects
-        $projects = $workspace->project;
+        $projects = Project::where('workspace_id', $id)->get();
 
         // Fetch roles from BankHelper
         $roles = BankHelper::getRoles();
 
         return Inertia::render('project/ShowProject', [
             'projects' => $projects,
-            'hasProjects' => $projects->isNotEmpty(), // Pass a boolean to check if projects exist
             'workspace' => $workspace,
-            'roles' => $roles
+            'roles' => $roles,
+            'workspaces' => $workspaces,
+            'members' => $members,
+            'notifications' => $notifications,
         ]);
     }
 
@@ -178,6 +188,31 @@ class ProjectController extends Controller
 
         // Redirect back to the previous page
         return redirect()->back();
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:500',
+        ]);
+
+        $project = Project::find($id);
+        if ($project) {
+            $project->update($validatedData);
+        }
+
+        return redirect()->back();
+    }
+
+    public function destroy($id)
+    {
+        $project = Project::find($id);
+        if ($project) {
+            $project->delete();
+        }
+
+        return redirect()->route('dashboard');
     }
 
     public function getUserProjects()

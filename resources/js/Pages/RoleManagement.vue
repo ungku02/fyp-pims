@@ -50,8 +50,8 @@ const submitEdit = () => {
 };
 
 const deleteRole = (role) => {
-    roleIdToUpdate.value = role.id;
-    showDeleteModal.value = true;
+        roleIdToUpdate.value = role.id;
+        showDeleteModal.value = true;
 };
 
 const confirmDelete = () => {
@@ -79,9 +79,10 @@ const viewRole = (role) => {
 };
 
 const openEditModal = (role) => {
-    roleform.name = role.name || '';
-    roleIdToUpdate.value = role.id; // Save the ID of the role being edited
-    modalVisible.value = true;
+        roleform.name = role.name || '';
+        roleIdToUpdate.value = role.id; // Save the ID of the role being edited
+        modalVisible.value = true;
+    
 };
 
 
@@ -141,13 +142,17 @@ onMounted(() => {
                                     <td>{{ index + 1 }}</td>
                                     <td>{{ role.name }}</td>
                                     <td class="flex justify-content-center">
-                                        <button class="btn btn-sm btn-grad-outline text-center me-2 "
-                                            @click="openEditModal(role) " data-bs-toggle="modal"
+                                        <button class="btn btn-sm btn-grad-outline text-center me-2"
+                                            @click="openEditModal(role)"
+                                            :disabled="role.name === 'Project Manager'"
+                                            data-bs-toggle="modal"
                                             data-bs-target="#editModal">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <button class="btn btn-delete btn-sm btn-grad-outline text-center me-2"
-                                            @click="() => deleteRole(role)" data-bs-toggle="modal"
+                                            @click="() => deleteRole(role)"
+                                            :disabled="role.name === 'Project Manager'"
+                                            data-bs-toggle="modal"
                                             data-bs-target="#deleteModal">
                                             <i class="bi bi-trash"></i>
                                         </button>

@@ -46,6 +46,10 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role): RedirectResponse
     {
+        if ($role->name === 'Project Manager') {
+            return redirect()->back()->withErrors(['error' => 'Editing the Project Manager role is not allowed.']);
+        }
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
         ]);
@@ -57,6 +61,10 @@ class RoleController extends Controller
 
     public function destroy(Role $role): RedirectResponse
     {
+        if ($role->name === 'Project Manager') {
+            return redirect()->back()->withErrors(['error' => 'Deleting the Project Manager role is not allowed.']);
+        }
+
         $usersWithRole = UserRole::where('role_id', $role->id)->get();
 
         if ($usersWithRole->isNotEmpty()) {

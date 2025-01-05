@@ -15,6 +15,9 @@ use App\Http\Controllers\RoleController;
 use App\Models\Workspace;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\TaskController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -55,6 +58,8 @@ Route::get('/show/project/{id}', [ProjectController::class, 'showProject'])->nam
 Route::get('/kanban', [ProjectController::class, 'showKanban'])->name('project.kanban');
 Route::get('/kanban/team', [ProjectController::class, 'showTeam'])->name('project/team');
 Route::post('/submit/project', [ProjectController::class, 'create'])->name('project.create');
+Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
+Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
 
 Route::get('/calendar', [ProjectController::class, 'showCalendar'])->name('calendar');
 
@@ -70,6 +75,9 @@ Route::post('/search-user', [RegisteredUserController::class, 'searchByEmail']);
 
 Route::get('/swap-tasks', [ProjectController::class, 'showSwapTasks'])->name('project.swapTasks');
 
+Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -78,6 +86,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/submit', [WorkspaceController::class, 'create'])->name('workspace.create');
     Route::put('/workspaces/{id}', [WorkspaceController::class, 'update'])->name('workspace.update');
     Route::delete('delete/workspaces/{id}', [WorkspaceController::class, 'destroy'])->name('workspace.destroy');
+    Route::post('/workspaces/{id}/members', [WorkspaceController::class, 'addMember'])->name('workspace.addMember');
+    Route::delete('/workspaces/{workspaceId}/members/{memberId}', [WorkspaceController::class, 'deleteMember'])->name('workspace.deleteMember');
 
     Route::get('/user/cards', [CardController::class, 'getUserCards']);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -99,6 +109,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
+
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::put('/users/{user}/availability', [UserController::class, 'updateAvailability'])->name('users.updateAvailability');
+    Route::get('/users/filter', [UserController::class, 'filter'])->name('users.filter');
+
+    // Swap Task Routes
+    Route::post('/swap-tasks/request', [TaskController::class, 'requestSwap'])->name('swapTasks.request');
+    Route::post('/swap-tasks/respond/{id}', [TaskController::class, 'respondToSwap'])->name('swapTasks.respond');
+    Route::get('/swap-tasks/requests', [TaskController::class, 'getSwapRequests'])->name('swapTasks.requests');
 });
 
 require __DIR__.'/auth.php';
