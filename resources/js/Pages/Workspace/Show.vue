@@ -316,8 +316,10 @@ fetchRoles();
                     style="background-color: #ffffff; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="m-3" style="color:#2A4965; font-weight: bold;">Projects</h3>
-                        <button @click="openAddMemberModal" class="btn btn-grad-outline mb-3"><i
-                                class="bi bi-plus-circle"></i>Project</button>
+                        <a :href="`/show/project/${props.workspace.id}`" class="btn btn-grad-outline mb-3">
+                            <i class="bi bi-plus-circle"></i> Project
+                        </a>
+
                     </div>
                     <div v-if="workspace.project.length === 0" class="bg-light-purple p-4 rounded mb-4"
                         style="background-color: #fff;">

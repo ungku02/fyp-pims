@@ -250,7 +250,7 @@ class ProjectController extends Controller
             ->where('project_id', $projectId)
             ->get();
 
-            // dd($tasks);
+            // dd($members);
 
         // Return the Inertia view with the necessary data
         return Inertia::render('Kanban/SwapTasks', [
@@ -260,5 +260,7 @@ class ProjectController extends Controller
             'members' => $members, // Pass the members
             'project' =>$project
         ]);
+
+
     }
 }

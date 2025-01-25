@@ -75,7 +75,7 @@ onMounted(() => {
                         <div v-for="task in tasks" :key="task.id" class="mb-3">
                             <label>{{ task.title }}</label>
                             <select v-model="selectedUser[task.id]" class="form-select">
-                                <option v-for="member in members" :key="member.id" :value="member.id">{{ member.name }}</option>
+                                <option v-for="member in props.members" :key="member.id" :value="member.id">{{ member.users.name }} - {{ member.roles.name }}</option>
                             </select>
                             <button @click="requestSwap(task.id)" class="btn btn-grad-outline mt-2">Request Swap</button>
                         </div>

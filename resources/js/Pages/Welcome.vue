@@ -99,7 +99,7 @@
         </div>
 
         <!-- Popular Courses Section -->
-        <div class="popular-courses-section container text-center" data-aos="fade-right">
+        <div class="popular-courses-section container text-center mb-4" data-aos="fade-right">
             <h2 class="course-text">Our System Features</h2>
 
             <h3 class="mb-5" style="font-size: 20px;">
@@ -138,7 +138,7 @@
             </div>
         </div>
 
-        <!-- Stats Section -->
+        <!-- Stats Section
         <div class="container stats-section my-5 text-center text-light">
             <div class="row">
                 <div class="col-md-4">
@@ -154,10 +154,10 @@
                     <p>Expert Teachers</p>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Courses Section -->
-        <div class="container courses-section my-5">
+        <!-- <div class="container courses-section my-5">
             <h2 class="text-center mb-4">Our Popular Courses</h2>
             <div class="row">
                 <div class="col-md-4" v-for="book in newArrivals" :key="book.id">
@@ -173,7 +173,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 

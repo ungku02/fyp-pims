@@ -1,8 +1,7 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, ref, computed } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import Card from '@/Components/Kanban/Card.vue';
-import { ref } from 'vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import ProjectLayout from '@/Layouts/ProjectLayout.vue';
@@ -43,9 +42,9 @@ const props = defineProps({
 const selectedColumnId = ref(null);
 const statusId = ref(null);
 const selectedMember = ref(null);
+const selectedCard = ref(null);
 
 const today = new Date().toISOString().split('T')[0];
-
 
 const columnForm = useForm({
     project_id: props.project.id,
@@ -64,7 +63,6 @@ function openEditColumnModal(column) {
     editColumnForm.name = column.name;
     editColumnForm.status = column.status ? column.status.name : ''; // Ensure status name is accessed correctly
     console.log('Edit Column:', column.status_id ? column.status.name : 'No status');
-
 }
 
 function submitEditColumn() {
@@ -90,11 +88,6 @@ function deleteColumn(columnId) {
             });
     }
 }
-
-// function logSelection() {
-//     console.log("Selected Member ID:", selectedMember.value);
-
-// }
 
 // Open the add column modal
 function openColumnModal() {
@@ -137,11 +130,8 @@ function handleFileUpload(event) {
 }
 
 function submit() {
-    
-
     form.column_id = selectedColumnId.value;
     form.status_id = statusId.value;
-    // console.log('Form data:', form.data());
 
     const data = {
         title: form.title,
@@ -177,6 +167,15 @@ function deleteCard(cardId) {
                 console.error('Card deletion failed:', error);
             });
     }
+}
+
+
+function isImage(url) {
+    return /\.(jpg|jpeg|png|gif)$/i.test(url);
+}
+
+function getFileName(url) {
+    return url.split('/').pop();
 }
 
 const draggingCard = ref(null);
@@ -222,6 +221,45 @@ function onDrop(column, event) {
         hoveredColumn.value = null;
     }
 }
+
+function openCardDetailsModal(card) {
+    selectedCard.value = card;
+}
+
+const filters = ref({
+    assignedUser: '',
+    owner: '',
+    title: '',
+    urgency: '',
+    status_id: '',
+});
+
+const filteredColumns = computed(() => {
+    return props.columns.map(column => {
+        return {
+            ...column,
+            cards: column.cards.filter(card => {
+                return (
+                    (!filters.value.assignedUser || card.user_role?.users?.name.includes(filters.value.assignedUser)) &&
+                    (!filters.value.owner || card.user_role?.users?.name.includes(filters.value.owner)) &&
+                    (!filters.value.title || card.title.includes(filters.value.title)) &&
+                    (!filters.value.urgency || card.urgency === filters.value.urgency) &&
+                    (!filters.value.status_id || card.status_id === filters.value.status_id)
+                );
+            })
+        };
+    });
+});
+
+function resetFilters() {
+    filters.value = {
+        assignedUser: '',
+        owner: '',
+        title: '',
+        urgency: '',
+        status_id: '',
+    };
+}
 </script>
 
 <template>
@@ -230,19 +268,61 @@ function onDrop(column, event) {
 
     <ProjectLayout :project="project" :projectTitle="projectTitle">
 
-
-
         <!-- Kanban Board Layout with Sidebar and Board Container -->
-
-
-        <!-- <SideBar /> -->
 
         <!-- Kanban Board Container with Fixed Background -->
         <div class="kanban-board d-flex flex-column"> <!-- Add Column Button -->
+
+
+            <!-- Filter Modal -->
+            <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="filterModalLabel">Filter Tasks</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="filter-form">
+                                <input v-model="filters.assignedUser" type="text" placeholder="Filter by assigned user"
+                                    class="form-control mb-2" />
+                                <input v-model="filters.owner" type="text" placeholder="Filter by owner"
+                                    class="form-control mb-2" />
+                                <input v-model="filters.title" type="text" placeholder="Filter by title"
+                                    class="form-control mb-2" />
+                                <select v-model="filters.urgency" class="form-select mb-2">
+                                    <option value="">All Urgencies</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                                <select v-model="filters.status_id" class="form-select mb-2">
+                                    <option value="">All Statuses</option>
+                                    <option v-for="statusOption in status" :key="statusOption.id"
+                                        :value="statusOption.id">
+                                        {{ statusOption.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Apply Filters</button>
+                            <button type="button" class="btn btn-secondary" @click="resetFilters">Reset Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class=" d-flex justify-content-end bg-transparent">
-                <button type="button" class="btn btn-primary" @click="openColumnModal" data-bs-toggle="modal"
+                <button type="button" class="btn btn-primary mb-2 me-2" @click="openColumnModal" data-bs-toggle="modal"
                     data-bs-target="#addColumnModal">
                     Add Column
+                </button>
+                <button type="button" class="btn btn-secondary mb-2" data-bs-toggle="modal"
+                    data-bs-target="#filterModal">
+                    <i class="bi bi-funnel"></i>
                 </button>
             </div>
             <!-- Add Column Modal -->
@@ -269,7 +349,6 @@ function onDrop(column, event) {
                                     <InputError class="mt-2" :message="columnForm.errors.status_id" />
                                 </div>
 
-
                                 <!-- Column Name Field -->
                                 <div class="mb-3">
                                     <InputLabel for="name" value="Column Name" />
@@ -291,29 +370,29 @@ function onDrop(column, event) {
 
             <div class="d-flex mx-5">
 
-
-                <!-- Filter options -->
                 <div v-if="project">
                     <div class="kanban-columns">
-                        <div v-for="column in columns" :key="column.id" class="kanban-column"
+                        <div v-for="column in filteredColumns" :key="column.id" class="kanban-column"
                             @drop.prevent="onDrop(column, $event)" @dragover.prevent="onDragOver(column, $event)"
                             :class="{ 'hovered': hoveredColumn === column.id }">
-                            <div class="card">   
-                                <div class="card-title flex justify-between">  
-                                    <h3 class="text-center" style="font-weight: bold;">{{ column.name }}</h3> 
-                                    <button style="margin:0px; border: none; background-color: transparent;" @click="openEditColumnModal(column)" data-bs-toggle="modal" data-bs-target="#editColumnModal"><i class="bi bi-pencil-square me-1"></i></button>
+                            <div class="card">
+                                <div class="card-title flex justify-between">
+                                    <h3 class="text-center" style="font-weight: bold;">{{ column.name }}</h3>
+                                    <button style="margin:0px; border: none; background-color: transparent;"
+                                        @click="openEditColumnModal(column)" data-bs-toggle="modal"
+                                        data-bs-target="#editColumnModal"><i
+                                            class="bi bi-pencil-square me-1"></i></button>
                                 </div>
 
                                 <div class="card-list">
                                     <div v-for="card in column.cards" :key="card.id" draggable="true"
-                                        @dragstart="onDragStart(card, $event)" @dragend="onDragEnd">
+                                        @dragstart="onDragStart(card, $event)" @dragend="onDragEnd"
+                                        @click="openCardDetailsModal(card)" data-bs-toggle="modal"
+                                        data-bs-target="#cardDetailsModal">
                                         <Card :style="{ marginTop: '10px' }" :title="card.title || 'No Title'"
-                                            :description="card.description"
-                                            :dueDate="card.due_date"
-                                            :urgency="card.urgency "
-                                            :assignedUser="card.user_role?.users?.name"
-                                            :assignedRole="card.user_role?.roles?.name"
-                                            :attachment="card.attachment"
+                                            :description="card.description" :dueDate="card.due_date"
+                                            :urgency="card.urgency " :assignedUser="card.user_role?.users?.name"
+                                            :assignedRole="card.user_role?.roles?.name" :attachment="card.attachment"
                                             @delete-card="deleteCard(card.id)" />
 
                                         <!-- <pre>{{ card }}</pre> Add this line to debug -->
@@ -402,7 +481,6 @@ function onDrop(column, event) {
                                 <InputError class="mt-2" :message="form.errors.user_project_id" />
                             </div>
 
-
                             <!-- File Attachment Field -->
                             <div class="mb-3">
                                 <InputLabel for="attachment" value="File Attachments" />
@@ -423,7 +501,8 @@ function onDrop(column, event) {
         </div>
 
         <!-- Edit Column Modal -->
-        <div class="modal fade" id="editColumnModal" tabindex="-1" aria-labelledby="editColumnModalLabel" aria-hidden="true">
+        <div class="modal fade" id="editColumnModal" tabindex="-1" aria-labelledby="editColumnModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -435,12 +514,14 @@ function onDrop(column, event) {
                             <!-- Column Name Field -->
                             <div class="mb-3">
                                 <InputLabel for="edit-name" value="Column Name" />
-                                <TextInput id="edit-name" type="text" class="mt-1 block w-full" v-model="editColumnForm.name" />
+                                <TextInput id="edit-name" type="text" class="mt-1 block w-full"
+                                    v-model="editColumnForm.name" />
                                 <InputError class="mt-2" :message="editColumnForm.errors.name" />
                             </div>
                             <div class="mb-3">
                                 <InputLabel for="edit-status" value="Column Status" />
-                                <TextInput id="edit-status" type="text" class="mt-1 block w-full" v-model="editColumnForm.status" />
+                                <TextInput id="edit-status" type="text" class="mt-1 block w-full"
+                                    v-model="editColumnForm.status" />
                                 <InputError class="mt-2" :message="editColumnForm.errors.status" />
                             </div>
 
@@ -448,28 +529,75 @@ function onDrop(column, event) {
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary">Update Column</button>
-                                <button type="button" class="btn" style="background-color: #F43E3E; color: #fff; border: none;" @click="deleteColumn(editColumnForm.id)">Delete Column</button>
+                                <button type="button" class="btn"
+                                    style="background-color: #F43E3E; color: #fff; border: none;"
+                                    @click="deleteColumn(editColumnForm.id)">Delete Column</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="cardDetailsModal" tabindex="-1" aria-labelledby="cardDetailsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h1 class="modal-title fs-4" id="cardDetailsModalLabel">Card Details</h1>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="selectedCard">
+                            <h3 class="mb-3">{{ selectedCard.title }}</h3>
+                            <div class="mb-4">
+                                <h5>Description</h5>
+                                <p>{{ selectedCard.description }}</p>
+                            </div>
+                            <div class="mb-4">
+                                <h5>Details</h5>
+                                <p><strong>Due Date:</strong> {{ selectedCard.due_date }}</p>
+                                <p><strong>Urgency:</strong> {{ selectedCard.urgency }}</p>
+                                <p><strong>Assigned User:</strong> {{ selectedCard.user_role?.users?.name }}</p>
+                                <p><strong>Assigned Role:</strong> {{ selectedCard.user_role?.roles?.name }}</p>
+                            </div>
+                            <div v-if="selectedCard.attachment && JSON.parse(selectedCard.attachment).length" class="mb-4">
+                                <h5>Attachments:</h5>
+                                <div v-for="file in JSON.parse(selectedCard.attachment)" :key="file.url"
+                                    class="attachment-thumbnail d-flex flex-wrap justify-content-start align-items-center mb-2 rounded shadow border p-2">
+                                    <i class="bi bi-paperclip" style="color:grey; font-size: 15px; margin-right: 10px;"></i>
+                                    <div v-if="isImage(file.url)" class="thumbnail-img-container">
+                                        <img :src="file.url" alt="Attachment" class="thumbnail-img">
+                                    </div>
+                                    <div v-else class="file-name-container">
+                                        <a :href="file.url" target="_blank" class="file-name">{{ file.name }}</a>
+                                    </div>
+                                </div>
+                                <a :href="JSON.parse(selectedCard.attachment)[0].url" target="_blank">
+                                    <i class="bi bi-paperclip" style="color:grey; font-size: 15px;"></i>
+                                    {{ JSON.parse(selectedCard.attachment).length }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <!-- </div> -->
+
     </ProjectLayout>
 
 </template>
-
 
 <style scoped>
 .bg-size {
     background-size: cover;
     background-position: center;
     overflow-x: auto;
-
 }
-
 
 .kanban-board {
     flex-grow: 1;
@@ -533,4 +661,28 @@ button:hover {
     transform: scale(1.05);
     transition: transform 0.2s ease;
 }
+
+
+
+.list-group-item {
+    display: flex;
+    align-items: center;
+}
+
+.list-group-item i {
+    font-size: 1.25rem;
+    color: #0d6efd;
+}
+
+.list-group-item a {
+    margin-left: 0.5rem;
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.list-group-item a:hover {
+    text-decoration: underline;
+}
+
+
 </style>

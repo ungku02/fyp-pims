@@ -18,6 +18,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\ToolsController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -78,6 +80,8 @@ Route::get('/swap-tasks', [ProjectController::class, 'showSwapTasks'])->name('pr
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
 
+Route::get('/tools', [ToolsController::class, 'index'])->name('tools.index');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -119,6 +123,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/swap-tasks/request', [TaskController::class, 'requestSwap'])->name('swapTasks.request');
     Route::post('/swap-tasks/respond/{id}', [TaskController::class, 'respondToSwap'])->name('swapTasks.respond');
     Route::get('/swap-tasks/requests', [TaskController::class, 'getSwapRequests'])->name('swapTasks.requests');
+
+    Route::get('/timeline', [TimelineController::class, 'show'])->name('timeline');
 });
 
 require __DIR__.'/auth.php';

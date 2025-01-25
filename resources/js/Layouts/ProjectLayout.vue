@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted,computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { router, usePage } from '@inertiajs/vue3';
@@ -80,8 +80,14 @@ onMounted(() => {
                             </a>
                         </li>
 
+                        <!-- <li class="nav-item my-2">
+                            <a :class="{ 'nav-link': true, 'active': route().current('timeline') }" href="/timeline">
+                                <i class="bi bi-clock-history me-2"></i> Timeline
+                            </a>
+                        </li> -->
+
                         <li class="nav-item my-2">
-                            <a href="" class="nav-link text-white">
+                            <a :class="{ 'nav-link': true, 'active': route().current('tools.index') }" href="/tools">
                                 <i class="bi bi-tools me-2"></i> Tools
                             </a>
                         </li>
@@ -94,7 +100,7 @@ onMounted(() => {
                                         <span class="text-white fw-bold">
                                             {{ project.workspace?.title ?
                                                 project.workspace.title.charAt(0).toUpperCase()
-                                            : '' }}
+                                                : '' }}
                                         </span>
                                     </div>
                                     <a class="nav-link text-white">
