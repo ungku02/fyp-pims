@@ -15,7 +15,11 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <!-- Scripts -->
         @routes
-        @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
+	@vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
+	@guest
+	@else
+        @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue", 'resources/js/firebase.js'])
+	@endguest
         @inertiaHead
         {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script> --}}
 
