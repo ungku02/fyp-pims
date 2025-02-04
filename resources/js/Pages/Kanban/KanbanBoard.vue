@@ -47,7 +47,22 @@ const props = defineProps({
 const selectedColumnId = ref(null);
 const statusId = ref(null);
 const selectedMember = ref(null);
-const selectedCard = ref(null);
+const selectedCard = ref({
+    title: '',
+    status: '',
+    description: '',
+    due_date: '',
+    urgency: '',
+    user_role: {
+        users: {
+            name: ''
+        },
+        roles: {
+            name: ''
+        }
+    },
+    attachment: '[]'
+});
 
 const today = new Date().toISOString().split('T')[0];
 
@@ -229,6 +244,7 @@ function onDrop(column, event) {
 
 function openCardDetailsModal(card) {
     selectedCard.value = card;
+    console.log('Selected Card:', card);
 }
 
 const filters = ref({
@@ -546,54 +562,64 @@ function resetFilters() {
         </div>
         <div class="modal fade" id="cardDetailsModal" tabindex="-1" aria-labelledby="cardDetailsModalLabel"
             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h1 class="modal-title fs-4" id="cardDetailsModalLabel">Card Details</h1>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-grey text-dark rounded-3">
+                    <div class="modal-header border-0 pb-0">
+                        <div class="w-100 d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h3 class="modal-title fw-bold fs-4" id="cardDetailsModalLabel">{{ selectedCard.title }}
+                                </h3>
+                                <div class="divider mt-2" style="border-top: solid 1px black;"></div>
+
+                                <!-- <span class="badge bg-secondary">{{ selectedCard.status.name }}</span> -->
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
                     </div>
                     <div class="modal-body">
-                        <div v-if="selectedCard">
-                            <h3 class="mb-3">{{ selectedCard.title }}</h3>
-                            <div class="mb-4">
-                                <h5>Description</h5>
-                                <p>{{ selectedCard.description }}</p>
-                            </div>
-                            <div class="mb-4">
-                                <h5>Details</h5>
-                                <p><strong>Due Date:</strong> {{ selectedCard.due_date }}</p>
-                                <p><strong>Urgency:</strong> {{ selectedCard.urgency }}</p>
-                                <p><strong>Assigned User:</strong> {{ selectedCard.user_role?.users?.name }}</p>
-                                <p><strong>Assigned Role:</strong> {{ selectedCard.user_role?.roles?.name }}</p>
-                            </div>
-                            <div v-if="selectedCard.attachment && JSON.parse(selectedCard.attachment).length"
-                                class="mb-4">
-                                <h5>Attachments:</h5>
-                                <div v-for="file in JSON.parse(selectedCard.attachment)" :key="file.url"
-                                    class="attachment-thumbnail d-flex flex-wrap justify-content-start align-items-center mb-2 rounded shadow border p-2">
-                                    <i class="bi bi-paperclip"
-                                        style="color:grey; font-size: 15px; margin-right: 10px;"></i>
-                                    <div v-if="isImage(file.url)" class="thumbnail-img-container">
-                                        <img :src="file.url" alt="Attachment" class="thumbnail-img">
-                                    </div>
-                                    <div v-else class="file-name-container">
-                                        <a :href="file.url" target="_blank" class="file-name">{{ file.name }}</a>
-                                    </div>
+                        <div class="mb-4">
+                            <h6 class="fw-bold"><i class="bi bi-bookmark-star me-2"></i>Status</h6>
+                            <span class="badge bg-secondary" style="font-size: 15px;">{{ selectedCard.status.name }}</span>
+
+                        </div>
+                        <div class="mb-4">
+                            <h6 class="fw-bold"><i class="bi bi-card-text me-2"></i>Description</h6>
+                            <p class="text-light-emphasis">{{ selectedCard.description }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Details</h6>
+                            <p><strong>Due Date:</strong> {{ selectedCard.due_date }}</p>
+                            <p><strong>Urgency:</strong> {{ selectedCard.urgency }}</p>
+                            <p><strong>Assigned User:</strong> {{ selectedCard.user_role?.users?.name }}</p>
+                            <p><strong>Assigned Role:</strong> {{ selectedCard.user_role?.roles?.name }}</p>
+                        </div>
+                        <div v-if="selectedCard.attachment && JSON.parse(selectedCard.attachment).length" class="mb-4">
+                            <h6 class="fw-bold"><i class="bi bi-paperclip me-2"></i>Attachments</h6>
+                            <div v-for="file in JSON.parse(selectedCard.attachment)" :key="file.url"
+                                class="d-flex align-items-center mb-2 p-2 bg-secondary rounded-3">
+                                <div v-if="isImage(file.url)" class="me-3">
+                                    <img :src="file.url" alt="Attachment" class="rounded"
+                                        style="width: 50px; height: 50px; object-fit: cover;">
                                 </div>
-                                <a :href="JSON.parse(selectedCard.attachment)[0].url" target="_blank">
-                                    <i class="bi bi-paperclip" style="color:grey; font-size: 15px;"></i>
-                                    {{ JSON.parse(selectedCard.attachment).length }}
-                                </a>
+                                <div class="flex-grow-1">
+                                    <a :href="file.url" target="_blank" class="text-light">{{ file.name }}</a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div class="modal-footer border-0 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                        <div>
+                            <button class="btn btn-secondary me-2"><i class="bi bi-pencil"></i> Edit</button>
+                            <!-- <button class="btn btn-secondary"><i class="bi bi-share"></i> Share</button> -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
 
 
     </ProjectLayout>

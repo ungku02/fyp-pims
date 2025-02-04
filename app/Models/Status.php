@@ -20,4 +20,9 @@ class Status extends Model
     {
         return $this->hasMany(Column::class, 'status_id', 'id');
     }
+
+    public function cards()
+    {
+        return $this->hasMany(Card::class, 'status_id', 'id');
+    }
 }

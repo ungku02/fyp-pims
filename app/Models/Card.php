@@ -45,4 +45,15 @@ class Card extends Model
     {
         return $this->belongsTo(User::class, 'user_project_id');
     }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id', 'id');
+    }
+
+    // Add this method to get the status name
+    public function getStatusNameAttribute()
+    {
+        return $this->status ? $this->status->name : 'No status';
+    }
 }

@@ -101,7 +101,7 @@ class ProjectController extends Controller
         $background = request()->input('background');
 
         // Retrieve columns associated with the specified project
-        $columns = Column::with(['cards.userRole.users', 'cards.userRole.roles', 'status'])
+        $columns = Column::with(['cards.userRole.users', 'cards.userRole.roles', 'cards.status'])
                          ->where('project_id', $projectId)
                          ->get();
         $project = $project = Project::with('userRole.users', 'userRole.roles', 'workspace', 'column')->find($projectId);
