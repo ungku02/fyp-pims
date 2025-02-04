@@ -12,10 +12,12 @@ class UserWorkspaceNotification extends Notification
     use Queueable;
 
     protected $user;
+    protected $workspace;
 
-    public function __construct($user)
+    public function __construct($user, $workspace)
     {
         $this->user = $user;
+        $this->workspace = $workspace;
     }
 
     public function via($notifiable)
@@ -26,7 +28,7 @@ class UserWorkspaceNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('You have been added to a workspace.')
+                    ->line('You have been added to a workspace: ' . $this->workspace->title)
                     ->action('View Profile', url('/profile/' . $this->user->id))
                     ->line('Thank you for using our application!');
     }
@@ -34,8 +36,10 @@ class UserWorkspaceNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => 'User ' . $this->user->name . ' is unavailable.',
+            'message' => 'You have been added to a workspace: ' . $this->workspace->title,
             'user_id' => $this->user->id,
+            'workspace_id' => $this->workspace->id,
         ];
     }
 }
+

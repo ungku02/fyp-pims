@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Card;
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Column;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Notifications\TaskNotification;
+use Illuminate\Support\Facades\Storage;
 
 class CardController extends Controller
 {
@@ -39,6 +42,15 @@ class CardController extends Controller
 
         $card = Card::create($validatedData);
 
+        $user = User::where('id', $validatedData['user_project_id'])->first();
+
+        // Mail::raw('You have been assigned a new task: ' . $validatedData['title'], function ($message) use ($user) {
+        //     $message->to($user->email)
+        //             ->subject('New Task Assigned');
+        // });
+
+        $user->notify(new TaskNotification($user, $card, 'new_task'));
+
         return redirect()->back();
     }
 
@@ -52,6 +64,15 @@ class CardController extends Controller
 
         $card = Card::findOrFail($id);
         $card->update($validatedData);
+
+        // Check if the task is overdue
+        if (now()->greaterThan($card->due_date)) {
+            $user = User::where('id', $card->user_project_id)->first();
+            Mail::raw('Your task is overdue: ' . $card->title, function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Task Overdue');
+            });
+        }
 
         return response()->json(['message' => 'Card updated successfully']);
     }

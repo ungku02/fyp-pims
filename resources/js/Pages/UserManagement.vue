@@ -31,18 +31,6 @@ const confirmDelete = () => {
     });
 };
 
-const toggleAvailability = (user) => {
-    const newAvailability = user.availability === 'available' ? 'unavailable' : 'available';
-    Inertia.put(`/users/${user.id}/availability`, { availability: newAvailability }, {
-        onSuccess: () => {
-            user.availability = newAvailability;
-        },
-        onError: (errors) => {
-            console.error('Error updating availability:', errors);
-        }
-    });
-};
-
 const filter = ref({
     name: '',
     email: '',
@@ -74,6 +62,12 @@ const resetFilter = () => {
             console.error('Error resetting filter:', errors);
         }
     });
+};
+
+const formatDate = (date) => {
+    if (!date) return '';
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
 };
 
 onMounted(() => {
@@ -114,11 +108,27 @@ onMounted(() => {
                                     <td>{{ index + 1 }}</td>
                                     <td>{{ user.name }}</td>
                                     <td>{{ user.email }}</td>
-                                    <td class="text-center">
-                                        <button @click="toggleAvailability(user)"
-                                            :class="{ 'btn-availability': true, 'active': user.availability === 'available', 'inactive': user.availability === 'unavailable' }">
+                                    <td>
+                                        <div v-if="user.availability === 'available'" style="color: beige;
+                                                background-color: green;
+                                                border-radius: 20px;
+                                                text-transform: capitalize;
+                                                text-align: center;
+                                                padding:3px;">
                                             {{ user.availability }}
-                                        </button>
+                                        </div>
+                                        <div v-else style="color: rgb(255, 255, 255);
+                                                background-color: red;
+                                                border-radius: 20px;
+                                                text-transform: capitalize;
+                                                text-align: center;
+                                                padding:3px;">
+                                            {{ user.availability }}
+                                        </div>
+                                        <div v-if="user.availability === 'unavailable'" class="mt-2">
+                                            <small>From: {{ formatDate(user.start_date) }}</small><br>
+                                            <small>To: {{ formatDate(user.end_date) }}</small>
+                                        </div>
                                     </td>
                                     <td class="flex justify-content-center">
                                         <button class="btn btn-delete btn-sm btn-grad-outline text-center me-2"

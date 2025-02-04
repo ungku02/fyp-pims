@@ -9,7 +9,7 @@ class SwapTask extends Model
 {
     use HasFactory;
 
-    protected $table = 'swap_task';
+    protected $table = 'swap_cards';
 
     protected $fillable = [
         'status',
@@ -20,16 +20,16 @@ class SwapTask extends Model
 
     public function oldUser()
     {
-        return $this->belongsTo(User::class, 'old_user_id', 'id');
+        return $this->belongsTo(User::class, 'old_user_id');
     }
 
     public function newUser()
     {
-        return $this->belongsTo(User::class, 'new_user_id', 'id');
+        return $this->belongsTo(User::class, 'new_user_id');
     }
 
     public function card()
     {
-        return $this->belongsTo(Card::class, 'card_id', 'id');
+        return $this->belongsTo(Card::class, 'card_id');
     }
 }

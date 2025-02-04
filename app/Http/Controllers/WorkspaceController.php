@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\UserRole;
 use App\Models\Workspace;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\WorkspaceMembers;
 use Illuminate\Validation\Rules;
-use Illuminate\Http\RedirectResponse;
-use App\Models\UserRole;
-use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\RedirectResponse;
+use App\Notifications\UserWorkspaceNotification;
 
 class WorkspaceController extends Controller
 {
@@ -75,18 +76,21 @@ class WorkspaceController extends Controller
                 'workspace_id' => $workspace->id,
             ]);
 
-            // Create a notification for the user
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'workspace',
-                'data' => json_encode(['message' => 'You have been added to a new workspace: ' . $workspace->title]),
-            ]);
+            // // Create a notification for the user
+            // Notification::create([
+            //     'user_id' => $user->id,
+            //     'type' => 'workspace',
+            //     'data' => json_encode(['message' => 'You have been added to a new workspace: ' . $workspace->title]),
+            // ]);
 
             // Send email notification to the user
             Mail::raw('You have been added to a new workspace: ' . $workspace->title, function ($message) use ($user) {
                 $message->to($user->email)
                         ->subject('New Workspace Added');
             });
+
+            $user->notify(new UserWorkspaceNotification($user, $workspace));
+
         }
     
         // Redirect to the 'board' route
@@ -129,6 +133,13 @@ class WorkspaceController extends Controller
                 'user_id' => $user->id,
                 'workspace_id' => $workspace->id,
             ]);
+
+            Mail::raw('You have been added to a new workspace: ' . $workspace->title, function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('New Workspace Added');
+            });
+
+            $user->notify(new UserWorkspaceNotification($user, $workspace));
         }
 
         return redirect()->back();

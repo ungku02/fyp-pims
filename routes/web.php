@@ -1,25 +1,28 @@
 <?php
 
+use App\Models\Card;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Project;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use App\Http\Controllers\FcmController;
+use App\Notifications\TaskNotification;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\WorkspaceController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\RoleController;
-use App\Models\Workspace;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimelineController;
-use App\Http\Controllers\ToolsController;
+use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -47,6 +50,7 @@ Route::get('/dashboard', function () {
 
       $events = auth()->user()->events;
       $notifications = auth()->user()->notifications;
+    //   dd($notifications);
     // dd($workspaces);
 
     return Inertia::render('Dashboard', ['workspaces' => $workspaces, 'notifications' => $notifications, 'role' => $role, 'events' => $events]);
@@ -62,6 +66,7 @@ Route::get('/kanban/team', [ProjectController::class, 'showTeam'])->name('projec
 Route::post('/submit/project', [ProjectController::class, 'create'])->name('project.create');
 Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
 Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+Route::get('/project/{id}/members', [ProjectController::class, 'getProjectMembers'])->name('project.members');
 
 Route::get('/calendar', [ProjectController::class, 'showCalendar'])->name('calendar');
 
@@ -120,11 +125,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/filter', [UserController::class, 'filter'])->name('users.filter');
 
     // Swap Task Routes
+    Route::get('/swap-tasks/get', [TaskController::class, 'getUserTasks'])->name('swapTasks.getUserTasks');
     Route::post('/swap-tasks/request', [TaskController::class, 'requestSwap'])->name('swapTasks.request');
     Route::post('/swap-tasks/respond/{id}', [TaskController::class, 'respondToSwap'])->name('swapTasks.respond');
     Route::get('/swap-tasks/requests', [TaskController::class, 'getSwapRequests'])->name('swapTasks.requests');
 
     Route::get('/timeline', [TimelineController::class, 'show'])->name('timeline');
+
+    Route::post('/save-fcm-token', [FcmController::class, 'saveFcmToken']);
+    Route::get('/send-notification', [FcmController::class, 'sendNotification']);
+
+
 });
 
 require __DIR__.'/auth.php';

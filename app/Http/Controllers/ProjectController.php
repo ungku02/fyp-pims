@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Card;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Column;
 use App\Models\Project;
+use App\Models\SwapTask;
 use App\Models\UserRole;
 use App\Models\Workspace;
 use App\Helper\BankHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Card;
 
 class ProjectController extends Controller
 {
@@ -112,6 +113,9 @@ class ProjectController extends Controller
         $members = UserRole::with(['users', 'roles'])
                            ->where('project_id', $projectId)
                            ->get();
+        
+      $notifications = auth()->user()->notifications;
+
 
 
         // Return the Inertia view with the necessary data
@@ -122,6 +126,7 @@ class ProjectController extends Controller
             'status' => $status, // Pass the status value for dropdown
             'members' => $members, // Pass the members
             'project' => $project, // Pass the project title
+            'notifications' => $notifications, // Pass notifications
 
         ]);
     }
@@ -237,11 +242,24 @@ class ProjectController extends Controller
         $project = Project::with('userRole.users', 'userRole.roles', 'workspace', 'column')->find($projectId);
         // dd($project);
         $userId = Auth::id();
-        $tasks = Card::with(['userRole.users', 'userRole.roles'])
+        $tasks = Card::with(['userRole.users', 'userRole.roles', 'swapTasks'])
             ->whereHas('userRole', function ($query) use ($userId, $projectId) {
                 $query->where('user_id', $userId)
                       ->where('project_id', $projectId);
-            })->get();
+            })->where('status_id', 1)
+            ->orWhere('status_id', 2)
+            ->where('due_date', '>', now())
+            ->where('user_project_id', $userId)
+            ->get();
+    
+        $receivedRequests = SwapTask::with('card', 'oldUser', 'newUser')
+            ->where('new_user_id', $userId)
+            ->where('status', 'pending')
+            ->get();
+
+        $sentRequests = SwapTask::with('card', 'oldUser', 'newUser')->where('old_user_id', $userId)->get();
+
+            // dd($tasks);
 
       
 
@@ -258,9 +276,17 @@ class ProjectController extends Controller
             'projectId' => $projectId,   // Pass the project ID
             'background' => $background, // Pass the background image
             'members' => $members, // Pass the members
-            'project' =>$project
+            'project' =>$project,
+            'receivedRequests' => $receivedRequests,
+            'sentRequests' => $sentRequests,
         ]);
 
 
+    }
+
+    public function getProjectMembers($id)
+    {
+        $project = Project::with('members.users', 'members.roles')->findOrFail($id);
+        return response()->json($project->members);
     }
 }

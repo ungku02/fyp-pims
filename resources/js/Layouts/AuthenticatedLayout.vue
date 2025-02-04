@@ -71,6 +71,39 @@ const markAsRead = async (notificationId) => {
     }
 };
 
+// Fungsi untuk tentukan class berdasarkan jenis notifikasi
+const getNotificationClass = (notification) => {
+    if (notification.type === 'App\\Notifications\\TaskNotification') {
+        return notification.data.type === 'new_task' ? 'bg-light' : 'bg-danger text-white';
+    }
+    if (notification.type === 'App\\Notifications\\UserUnavailabilityNotification') {
+        return 'bg-warning text-dark';
+    }
+    if (notification.type === 'App\\Notifications\\UserWorkspaceNotification') {
+        return 'bg-info text-white';
+    }
+    return 'bg-light';
+};
+
+// Fungsi untuk tentukan ikon berdasarkan jenis notifikasi
+const getNotificationIcon = (notification) => {
+    if (notification.type === 'App\\Notifications\\TaskNotification') {
+        return notification.data.type === 'new_task' ? '🔵' : '🔴'; // New Task = Biru, Overdue Task = Merah
+    }
+    if (notification.type === 'App\\Notifications\\UserUnavailabilityNotification') {
+        return '🟡'; // Kuning untuk User Unavailability
+    }
+    if (notification.type === 'App\\Notifications\\UserWorkspaceNotification') {
+        return '🟢'; // Hijau untuk Workspace
+    }
+    return '⚫'; // Hitam untuk default
+};
+
+
+// Tukar `\n` kepada `<br>` untuk multiline text
+const formatMessage = (message) => {
+    return message.replace(/\n/g, '<br>');
+};
 onMounted(() => {
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
     currentDate.value = new Date().toLocaleDateString(undefined, options);
@@ -191,16 +224,33 @@ onMounted(() => {
                                         {{ unreadCount }}
                                     </span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
-                                    <li v-if="!props.notifications || props.notifications.length === 0"
-                                        class="dropdown-item">No notifications
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-3 p-2"
+                                    style="min-width: 320px; max-width: 700px;" aria-labelledby="notificationDropdown">
+
+                                    <!-- Jika Tiada Notifikasi -->
+                                    <li v-if="!props.notifications || props.notifications.filter(n => !n.read).length === 0"
+                                        class="dropdown-item text-center text-muted py-3">
+                                        <i class="bi bi-bell-slash fs-3 d-block mb-2"></i>
+                                        <span>You don't have any notifications yet!</span>
                                     </li>
-                                    <li v-for="notification in props.notifications" :key="notification.id"
-                                        class="dropdown-item" @click="markAsRead(notification.id)">
-                                        {{ notification.data.message }}
-                                        <span v-if="!notification.read" class="badge bg-primary ms-2">new</span>
-                                        <span v-else class="badge bg-secondary ms-2">seen</span>
+
+                                    <li v-for="notification in props.notifications.filter(n => !n.read)"
+                                        :key="notification.id"
+                                        class="dropdown-item d-flex align-items-center gap-2 p-3 border-bottom"
+                                        @click="markAsRead(notification.id)">
+
+                                        <!-- Titik Warna Sebagai Indikator -->
+                                        <span class="fs-6">{{ getNotificationIcon(notification) }}</span>
+
+                                        <!-- Mesej Notifikasi -->
+                                        <div class="flex-grow-1">
+                                            <div v-html="formatMessage(notification.data.message)"></div>
+                                        </div>
+
+                                        <!-- Badge Status -->
+                                        <span class="badge bg-primary">New</span>
                                     </li>
+
                                 </ul>
                             </div>
                             <div class="dropdown">

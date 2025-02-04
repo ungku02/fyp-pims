@@ -36,6 +36,11 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    notifications: {
+        type: Array,
+        default: () => []
+    },
+
 });
 
 // Define references
@@ -266,7 +271,8 @@ function resetFilters() {
 
     <Head title="Kanban Board" />
 
-    <ProjectLayout :project="project" :projectTitle="projectTitle">
+    <ProjectLayout :project="project" :notifications="notifications">
+
 
         <!-- Kanban Board Layout with Sidebar and Board Container -->
 
@@ -561,11 +567,13 @@ function resetFilters() {
                                 <p><strong>Assigned User:</strong> {{ selectedCard.user_role?.users?.name }}</p>
                                 <p><strong>Assigned Role:</strong> {{ selectedCard.user_role?.roles?.name }}</p>
                             </div>
-                            <div v-if="selectedCard.attachment && JSON.parse(selectedCard.attachment).length" class="mb-4">
+                            <div v-if="selectedCard.attachment && JSON.parse(selectedCard.attachment).length"
+                                class="mb-4">
                                 <h5>Attachments:</h5>
                                 <div v-for="file in JSON.parse(selectedCard.attachment)" :key="file.url"
                                     class="attachment-thumbnail d-flex flex-wrap justify-content-start align-items-center mb-2 rounded shadow border p-2">
-                                    <i class="bi bi-paperclip" style="color:grey; font-size: 15px; margin-right: 10px;"></i>
+                                    <i class="bi bi-paperclip"
+                                        style="color:grey; font-size: 15px; margin-right: 10px;"></i>
                                     <div v-if="isImage(file.url)" class="thumbnail-img-container">
                                         <img :src="file.url" alt="Attachment" class="thumbnail-img">
                                     </div>
