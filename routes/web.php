@@ -79,6 +79,7 @@ Route::get('/card', [CardController::class, 'index'])->name('card.index');
 Route::post('/submit/card', [CardController::class, 'create'])->name('card.create');
 Route::post('/submit/column', [ColumnController::class, 'create'])->name('column.create');
 Route::put('/card/{id}', [CardController::class, 'update'])->name('card.update');
+Route::put('/card/{id}/update', [CardController::class, 'updateCard'])->name('card.updateCard');
 Route::delete('/card/{id}', [CardController::class, 'delete'])->name('card.delete');
 Route::put('/column/{id}', [ColumnController::class, 'update'])->name('column.update');
 Route::delete('/column/{id}', [ColumnController::class, 'delete'])->name('column.delete');
@@ -138,7 +139,10 @@ Route::get('/tools', [ToolsController::class, 'index'])->name('tools.index');
     Route::post('/save-fcm-token', [FcmController::class, 'saveFcmToken']);
     Route::get('/send-notification', [FcmController::class, 'sendNotification']);
 
+    Route::get('/card/{id}/edit', [CardController::class, 'edit'])->name('card.edit');
 
 });
+
+
 
 require __DIR__.'/auth.php';

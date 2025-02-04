@@ -6,6 +6,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import ProjectLayout from '@/Layouts/ProjectLayout.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { Inertia } from '@inertiajs/inertia';
 
 const props = defineProps({
     background: {
@@ -138,6 +139,60 @@ const form = useForm({
     attachment: [], // Ensure this is an array to handle multiple attachments
 });
 
+const editForm = useForm({
+    id: null,
+    title: '',
+    description: '',
+    column_id: null,
+    status_id: null,
+    urgency: '',
+    due_date: '',
+    user_project_id: null,
+    attachment: [],
+});
+
+const showEditCardModal = ref(false);
+const showCardDetailsModal = ref(false);
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+function openEditCardModal(card) {
+    editForm.id = card.id;
+    editForm.title = card.title;
+    editForm.description = card.description;
+    editForm.column_id = card.column_id;
+    editForm.status_id = card.status_id;
+    editForm.urgency = card.urgency;
+    editForm.due_date = card.due_date ? formatDate(card.due_date) : '';
+    editForm.user_project_id = card.user_project_id;
+    editForm.attachment = JSON.parse(card.attachment);
+    showCardDetailsModal.value = false; // Close the view modal
+    showEditCardModal.value = true; // Open the edit modal
+}
+
+function closeEditCardModal() {
+    showEditCardModal.value = false;
+}
+
+function submitEditCard() {
+    editForm.put(route('card.updateCard', editForm.id), {
+        onSuccess: () => {
+            editForm.reset();
+            closeEditCardModal();
+            location.reload();
+        },
+        onError: () => {
+            console.error('Card update failed:', editForm.errors);
+        },
+    });
+}
+
 // Method to open modal with column ID
 function openModal(column) {
     selectedColumnId.value = column.id;
@@ -244,7 +299,11 @@ function onDrop(column, event) {
 
 function openCardDetailsModal(card) {
     selectedCard.value = card;
-    console.log('Selected Card:', card);
+    showCardDetailsModal.value = true;
+}
+
+function closeCardDetailsModal() {
+    showCardDetailsModal.value = false;
 }
 
 const filters = ref({
@@ -560,8 +619,8 @@ function resetFilters() {
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="cardDetailsModal" tabindex="-1" aria-labelledby="cardDetailsModalLabel"
-            aria-hidden="true">
+        <div v-if="showCardDetailsModal" class="modal fade show" tabindex="-1" aria-labelledby="cardDetailsModalLabel"
+            style="display: block;" aria-modal="true" role="dialog">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content bg-grey text-dark rounded-3">
                     <div class="modal-header border-0 pb-0">
@@ -573,8 +632,7 @@ function resetFilters() {
 
                                 <!-- <span class="badge bg-secondary">{{ selectedCard.status.name }}</span> -->
                             </div>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close btn-close-white" @click="closeCardDetailsModal" aria-label="Close"></button>
                         </div>
                     </div>
                     <div class="modal-body">
@@ -609,9 +667,9 @@ function resetFilters() {
                         </div>
                     </div>
                     <div class="modal-footer border-0 d-flex justify-content-between">
-                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-light" @click="closeCardDetailsModal">Close</button>
                         <div>
-                            <button class="btn btn-secondary me-2"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn btn-secondary me-2" @click="openEditCardModal(selectedCard)"><i class="bi bi-pencil"></i> Edit</button>
                             <!-- <button class="btn btn-secondary"><i class="bi bi-share"></i> Share</button> -->
                         </div>
                     </div>
@@ -619,8 +677,77 @@ function resetFilters() {
             </div>
         </div>
 
+        <!-- Edit Card Modal -->
+        <div v-if="showEditCardModal" class="modal fade show" tabindex="-1" aria-labelledby="editCardModalLabel" style="display: block;" aria-modal="true" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="editCardModalLabel">Edit Card</h1>
+                        <button type="button" class="btn-close" @click="closeEditCardModal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="submitEditCard">
+                            <!-- Title Field -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-title" value="Title" />
+                                <TextInput id="edit-title" type="text" class="mt-1 block w-full" v-model="editForm.title" autofocus autocomplete="title" />
+                                <InputError class="mt-2" :message="editForm.errors.title" />
+                            </div>
 
+                            <!-- Description Field -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-description" value="Description" />
+                                <TextInput id="edit-description" type="text" class="mt-1 block w-full" v-model="editForm.description" autocomplete="description" />
+                                <InputError class="mt-2" :message="editForm.errors.description" />
+                            </div>
 
+                            <!-- Urgency Level Field with Color Flags -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-urgency" value="Urgency" />
+                                <select id="edit-urgency" v-model="editForm.urgency" class="form-select rounded block">
+                                    <option value="normal" :class="{ 'flag-green': editForm.urgency === 'normal' }">Normal</option>
+                                    <option value="urgent" :class="{ 'flag-yellow': editForm.urgency === 'urgent' }">Urgent</option>
+                                    <option value="critical" :class="{ 'flag-red': editForm.urgency === 'critical' }">Critical</option>
+                                </select>
+                                <InputError class="mt-2" :message="editForm.errors.urgency" />
+                            </div>
+
+                            <!-- Due Date Field -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-due_date" value="Due Date" />
+                                <input id="edit-due_date" type="date" class="form-control mt-1 rounded" v-model="editForm.due_date" :min="today" />
+                                <InputError class="mt-2" :message="editForm.errors.due_date" />
+                            </div>
+
+                            <!-- Assign to Member Field -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-user_project_id" value="Assign to Member" />
+                                <select id="edit-user_project_id" v-model="editForm.user_project_id" class="form-select rounded block">
+                                    <option disabled value="">Select Member</option>
+                                    <option v-for="member in members" :key="member.id" :value="member.users.id">
+                                        {{ member.users.name }} - {{ member.roles.name }}
+                                    </option>
+                                </select>
+                                <InputError class="mt-2" :message="editForm.errors.user_project_id" />
+                            </div>
+
+                            <!-- File Attachment Field -->
+                            <div class="mb-3">
+                                <InputLabel for="edit-attachment" value="File Attachments" />
+                                <input id="edit-attachment" type="file" class="form-control p-2 rounded" multiple style="border: 1px solid black;" @change="handleFileUpload" />
+                                <InputError class="mt-2" :message="editForm.errors.attachment" />
+                            </div>
+
+                            <!-- Modal Footer Buttons -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @click="closeEditCardModal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </ProjectLayout>
 
