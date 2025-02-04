@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="overflow-y: hidden;">
         <!-- Navbar -->
         <div class="d-flex justify-content-between align-items-center px-4 py-0">
             <!-- Logo -->
