@@ -214,13 +214,13 @@ onMounted(async () => {
                                 <div class="members">
                                     <div v-for="member in workspace.members.slice(0, 3)" :key="member.id"
                                         class="member-avatar">
-                                        {{ member.users.name.charAt(0).toUpperCase()?? '' }}
+                                        {{ member.users?.name?.charAt(0).toUpperCase() || '' }}
                                     </div>
                                     <div v-if="workspace.members.length > 3" class="more-members">
                                         +{{ workspace.members.length - 3 }}
                                     </div>
                                 </div>
-                                <div class="owner">Owner: {{ workspace.users.name ?? 'N/A' }}</div>
+                                <div class="owner">Owner: {{ workspace.users?.name || 'N/A' }}</div>
                             </div>
                         </div>
                     </section>
