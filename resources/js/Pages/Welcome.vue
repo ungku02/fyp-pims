@@ -215,9 +215,6 @@ body {
 
     , #948E99);
     color: #fff;
-    overflow-y: hidden;
-        height: 100vh;
-        position: relative;
 }
 
 /* Navbar */
