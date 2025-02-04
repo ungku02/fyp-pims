@@ -15,7 +15,7 @@ class SettingsController extends Controller
 {
     public function index()
     {
-        $workspaces = Workspace::with('project', 'members', 'users')
+        $workspace = Workspace::with('project', 'members', 'users')
             ->select('id', 'title', 'description', 'user_id')
             ->whereHas('members', function ($query) {
                 $query->where('user_id', auth()->id());
@@ -23,7 +23,7 @@ class SettingsController extends Controller
             ->orWhere('user_id', auth()->id())
             ->get();
         $notifications = auth()->user()->notifications;
-        return Inertia::render('Settings', ['notifications' => $notifications, 'workspaces' => $workspaces]);
+        return Inertia::render('Settings', ['notifications' => $notifications, 'workspaces' => $workspace]);
     }
 
     public function update(Request $request)

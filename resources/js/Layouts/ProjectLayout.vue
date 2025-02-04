@@ -133,11 +133,11 @@ onMounted(() => {
                             </a>
                         </li> -->
 
-                        <li class="nav-item my-2">
+                        <!-- <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('tools.index') }" href="/tools">
                                 <i class="bi bi-tools me-2"></i> Tools
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item my-2">
                             <h5 class="text-white">You are in:</h5>
                             <ul class="nav flex-column">

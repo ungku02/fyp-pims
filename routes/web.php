@@ -56,7 +56,10 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard', ['workspaces' => $workspaces, 'notifications' => $notifications, 'role' => $role, 'events' => $events]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/board', [WorkspaceController::class, 'index'])->name('board');
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/board', [WorkspaceController::class, 'index'])->name('board');
 
 Route::get('/project', [ProjectController::class, 'index'])->name('project');
 Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project/show');
@@ -67,6 +70,8 @@ Route::post('/submit/project', [ProjectController::class, 'create'])->name('proj
 Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
 Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
 Route::get('/project/{id}/members', [ProjectController::class, 'getProjectMembers'])->name('project.members');
+Route::post('/project/{id}/add-member', [ProjectController::class, 'addMember'])->name('project.addMember');
+Route::put('/project/{id}/update-member-role/{memberId}', [ProjectController::class, 'updateMemberRole'])->name('project.updateMemberRole');
 
 Route::get('/calendar', [ProjectController::class, 'showCalendar'])->name('calendar');
 
@@ -86,8 +91,6 @@ Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
 
 Route::get('/tools', [ToolsController::class, 'index'])->name('tools.index');
-
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

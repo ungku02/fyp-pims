@@ -141,16 +141,16 @@ const errorMessage = ref('');
 
 // const errorMessage = ref('');
 
-async function sendNotification() {
-    try {
-        const response = await axios.get('send-notification'); // Panggil GET request ke Laravel
-        successMessage.value = 'Notifikasi berjaya dihantar!';
-        console.log('Respons dari server:', response.data);
-    } catch (error) {
-        errorMessage.value = 'Gagal menghantar notifikasi';
-        console.error('Ralat:', error);
-    }
-}
+// async function sendNotification() {
+//     try {
+//         const response = await axios.get('send-notification'); // Panggil GET request ke Laravel
+//         successMessage.value = 'Notifikasi berjaya dihantar!';
+//         console.log('Respons dari server:', response.data);
+//     } catch (error) {
+//         errorMessage.value = 'Gagal menghantar notifikasi';
+//         console.error('Ralat:', error);
+//     }
+// }
 
 onMounted(async () => {
     try {
@@ -175,7 +175,7 @@ onMounted(async () => {
                     <header class="header">
                         <h2 style="text-transform: capitalize;">Hi, {{ $page.props.auth.user.name }}!</h2>
                         <p>Ready to start your day and dive into the projects?</p>
-                        <button class="btn btn-primary" @click="sendNotification">Hantar Notifikasi</button>
+                        <!-- <button class="btn btn-primary" @click="sendNotification">Hantar Notifikasi</button> -->
                     </header>
 
                     <!-- Task Summary Section -->

@@ -23,24 +23,17 @@
                     <p class="text-muted mb-4">Explore and manage your projects below.</p>
 
                     <!-- Project Cards -->
-                    <div class="row">
-                        <!-- <div v-if="hasProjects" class="d-flex flex-wrap justify-content-start"> -->
-                            <div v-for="project in props.projects" :key="project.id" class="col-md-3 mb-3">
-                                <div class="card  project-card me-5"
-                                    @click="goToKanban(project.id)" style="width: 300px;">
-                                    <img :src="`/img/${project.image}`" class="card-img-top project-image"
-                                        alt="Project Image" style="width: 400px; height:200px;">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ project.title }}</h5>
-                                        <p class="card-text">{{ project.description }}</p>
-                                    </div>
-                                </div>
+                    <div class="grid-container">
+                        <div v-for="project in props.projects" :key="project.id" class="project-card"
+                            @click="goToKanban(project.id)">
+                            <img :src="`/img/${project.image}`" class="project-image" alt="Project Image">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ project.title }}</h5>
+                                <p class="card-text">{{ project.description }}</p>
                             </div>
-                        <!-- </div> -->
-                        <!-- <div v-else class="text-center mt-4">
-                            <p class="text-muted">No project created yet</p>
-                        </div> -->
+                        </div>
                     </div>
+
 
                     <!-- Add Project Button -->
                     <div class="text-end mt-4">
@@ -347,8 +340,48 @@ function submit() {
     transform: scale(1.05);
 }
 
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* Auto adjust column */
+    gap: 20px;
+    /* Add spacing between cards */
+    padding: 10px;
+}
+
 .project-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: scale(1.05);
+}
+
+.project-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #555;
 }
 
 .add-workspace-btn {

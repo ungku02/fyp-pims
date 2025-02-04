@@ -144,16 +144,16 @@ onMounted(() => {
                         </li>
 
 
-                        <li class="nav-item my-2">
+                        <!-- <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('settings') }" href="/settings">
                                 <i class="bi bi-gear me-2"></i> Settings
                             </a>
-                        </li>
-                        <li class="nav-item my-2">
+                        </li> -->
+                        <!-- <li class="nav-item my-2">
                             <a :class="{ 'nav-link': true, 'active': route().current('preview') }" href="/preview">
                                 <i class="bi bi-eye me-2"></i> Preview
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item my-2">
                             <h5 style="color:white;">Your are in:</h5>
                             <ul class="nav flex-column">

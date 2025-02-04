@@ -305,12 +305,12 @@ body {
 .benefits-title {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #444;
+    color: #ffd4d4;
     margin-bottom: 1.5rem;
 }
 
 .highlight {
-    color: #aa076b;
+    color: #b07b9c;
 }
 
 .benefits-list {
@@ -330,12 +330,12 @@ body {
     font-size: 1.25rem;
     font-weight: bold;
     margin-bottom: 0.25rem;
-    color: #333;
+    color: #b07b9c;
 }
 
 .benefits-list p {
     margin: 0;
-    color: #666;
+    color: #ffd4d4;
 }
 
 /* Icon Styling */

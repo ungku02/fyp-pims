@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
+import axios from 'axios';
 
 const props = defineProps({
     project: {
@@ -24,13 +25,16 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    roles: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const unreadCount = computed(() =>
     props.notifications.filter((notification) => !notification.read).length
 );
 
-const roles = ref([]); // Fetch roles from the server or define them here
 
 const form = useForm({
     memberEmail: '',
@@ -45,14 +49,75 @@ const openAddMemberModal = () => {
     addMemberModal.show();
 };
 
-const confirmAddMember = () => {
-    console.log('Add member:', form.memberEmail, 'with role:', form.selectedRole);
-    // Logic to add the member to the project
-    // Reset form fields
-    form.memberEmail = '';
-    form.selectedRole = '';
-    const addMemberModal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
-    addMemberModal.hide();
+const searchResult = ref(null);
+const memberEmail = ref('');
+const selectedRole = ref('');
+
+const searchUser = async () => {
+    if (memberEmail.value) {
+        try {
+            const response = await axios.post('/search-user', { email: memberEmail.value });
+            if (response.data && response.data.email) {
+                searchResult.value = response.data;
+            } else {
+                searchResult.value = 'not_found';
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                searchResult.value = 'not_found';
+            } else {
+                console.error("An error occurred:", error);
+                searchResult.value = null;
+            }
+        }
+    } else {
+        searchResult.value = 'not_found';
+    }
+};
+
+const openRoleModal = () => {
+    if (searchResult.value && searchResult.value !== 'not_found') {
+        const roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
+        roleModal.show();
+    }
+};
+
+
+const confirmAddMember = async () => {
+    if (selectedRole.value) {
+        try {
+            await axios.post(route('project.addMember', { id: props.project.id }), {
+                email: searchResult.value.email,
+                role_id: selectedRole.value,
+            });
+
+            // Ensure form.members is defined and accessible
+            if (!form.members) {
+                form.members = [];
+            }
+
+            form.members.push({
+                email: searchResult.value.email,
+                name: searchResult.value.name,
+                role_id: selectedRole.value,
+                role: props.roles.find(role => role.id === selectedRole.value).name
+            });
+
+            selectedRole.value = '';
+            memberEmail.value = '';
+            searchResult.value = null;
+
+            // Paksa reload route
+            location.reload();
+        } catch (error) {
+            console.error("An error occurred while adding the member:", error);
+        }
+    }
+};
+
+
+const removeMember = (index) => {
+    form.members.splice(index, 1);
 };
 
 const modalVisible = ref(false);
@@ -106,6 +171,44 @@ watch(deleteModalVisible, (newValue) => {
     document.getElementById('deleteModal').inert = !newValue;
 });
 
+const editMemberModalVisible = ref(false);
+const memberToEdit = ref(null);
+
+const openEditMemberModal = (member) => {
+    memberToEdit.value = {
+        id: member.id,
+        email: member.users.email,
+        role_id: member.roles.id,
+    };
+    editMemberModalVisible.value = true;
+};
+
+const confirmEditMember = async () => {
+    if (memberToEdit.value.role_id) {
+        try {
+            await axios.put(route('project.updateMemberRole', { id: props.project.id, memberId: memberToEdit.value.id }), {
+                role_id: memberToEdit.value.role_id,
+            });
+
+            // Update the member's role in the local members list
+            const memberIndex = members.data.findIndex(member => member.id === memberToEdit.value.id);
+            console.log('Member index:', memberIndex);
+            if (memberIndex !== -1) {
+                members.data[memberIndex].roles.id = memberToEdit.value.role_id;
+                members.data[memberIndex].roles.name = props.roles.find(role => role.id === memberToEdit.value.role_id).name;
+            }
+
+            editMemberModalVisible.value = false;
+            memberToEdit.value = null;
+
+            // Force reload route
+            location.reload();
+        } catch (error) {
+            console.error("An error occurred while editing the member:", error);
+        }
+    }
+};
+
 console.log('Project prop in Show.vue:', props.project);
 </script>
 
@@ -155,8 +258,8 @@ console.log('Project prop in Show.vue:', props.project);
                                         </button>
                                     </td> -->
                                 <td class="flex justify-content-center">
-
-                                    <button class="btn btn-sm btn-grad-outline text-center">
+                                    <button @click="openEditMemberModal(member)"
+                                        class="btn btn-sm btn-grad-outline text-center">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                 </td>
@@ -232,14 +335,16 @@ console.log('Project prop in Show.vue:', props.project);
                             <!-- Email Input -->
                             <div class="mb-3">
                                 <InputLabel for="email" value="Email" />
-                                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.memberEmail"
-                                    required />
+                                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="memberEmail"
+                                    @input="searchUser" required />
                                 <InputError class="mt-2" :message="form.errors.email" />
                             </div>
+                            <div v-if="searchResult === 'not_found'" class="text-danger">User not found.</div>
+                            <div v-else-if="searchResult" class="text-success">User found: {{ searchResult.name }}</div>
                             <!-- Role Selection -->
                             <div class="mb-3">
                                 <InputLabel for="role" value="Role" />
-                                <select v-model="form.selectedRole" class="form-select mt-1 block w-full" required>
+                                <select v-model="selectedRole" class="form-select mt-1 block w-full" required>
                                     <option disabled value="">Select Role</option>
                                     <option v-for="role in roles" :value="role.id" :key="role.id">{{ role.name }}
                                     </option>
@@ -307,6 +412,44 @@ console.log('Project prop in Show.vue:', props.project);
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Member Modal -->
+        <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel"
+            :inert="!editMemberModalVisible" :aria-hidden="!editMemberModalVisible" v-if="editMemberModalVisible">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editMemberModalLabel">Edit Member</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="confirmEditMember">
+                            <!-- Email Input (View Only) -->
+                            <div class="mb-3">
+                                <InputLabel for="editMemberEmail" value="Email" />
+                                <TextInput id="editMemberEmail" type="email" class="mt-1 block w-full"
+                                    v-model="memberToEdit.value.email" readonly />
+                            </div>
+                            <!-- Role Selection -->
+                            <div class="mb-3">
+                                <InputLabel for="editMemberRole" value="Role" />
+                                <select v-model="memberToEdit.value.role_id" class="form-select mt-1 block w-full"
+                                    required>
+                                    <option disabled value="">Select Role</option>
+                                    <option v-for="role in roles" :value="role.id" :key="role.id">{{ role.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <!-- Modal Footer -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-grad-outline">Save Changes</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -450,6 +593,7 @@ console.log('Project prop in Show.vue:', props.project);
     text-transform: capitalize;
 
 }
+
 .pagination {
     display: flex;
     justify-content: center;

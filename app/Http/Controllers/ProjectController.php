@@ -84,11 +84,13 @@ class ProjectController extends Controller
 
         $notifications = auth()->user()->notifications; // Get user notifications
 
+        $roles = BankHelper::getRoles(); // Fetch roles from BankHelper
 
         return Inertia::render('project/Show', [
             'project' => $project, // Pass the project title
             'members' => $members, // Pass paginated members
             'notifications' => $notifications, // Pass notifications
+            'roles' => $roles, // Pass roles
         ]);
     }
 
@@ -242,22 +244,31 @@ class ProjectController extends Controller
         $project = Project::with('userRole.users', 'userRole.roles', 'workspace', 'column')->find($projectId);
         // dd($project);
         $userId = Auth::id();
-        $tasks = Card::with(['userRole.users', 'userRole.roles', 'swapTasks'])
-            ->whereHas('userRole', function ($query) use ($userId, $projectId) {
-                $query->where('user_id', $userId)
-                      ->where('project_id', $projectId);
-            })->where('status_id', 1)
-            ->orWhere('status_id', 2)
-            ->where('due_date', '>', now())
-            ->where('user_project_id', $userId)
-            ->get();
-    
-        $receivedRequests = SwapTask::with('card', 'oldUser', 'newUser')
-            ->where('new_user_id', $userId)
-            ->where('status', 'pending')
-            ->get();
+       $tasks = Card::with(['userRole.users', 'userRole.roles', 'swapTasks'])
+    ->whereHas('userRole', function ($query) use ($userId, $projectId) {
+        $query->where('user_id', $userId)
+              ->where('project_id', $projectId);
+    })
+    ->whereIn('status_id', [1, 2])
+    ->where('due_date', '>', now())
+    ->where('user_project_id', $userId)
+    ->get();
 
-        $sentRequests = SwapTask::with('card', 'oldUser', 'newUser')->where('old_user_id', $userId)->get();
+$receivedRequests = SwapTask::with(['card.userRole.project', 'oldUser', 'newUser'])
+    ->whereHas('card.userRole.project', function ($query) use ($projectId) {
+        $query->where('id', $projectId);
+    })
+    ->where('new_user_id', $userId)
+    ->where('status', 'pending')
+    ->get();
+
+$sentRequests = SwapTask::with(['card.userRole.project', 'oldUser', 'newUser'])
+    ->whereHas('card.userRole.project', function ($query) use ($projectId) {
+        $query->where('id', $projectId);
+    })
+    ->where('old_user_id', $userId)
+    ->get();
+
 
             // dd($tasks);
 
@@ -288,5 +299,43 @@ class ProjectController extends Controller
     {
         $project = Project::with('members.users', 'members.roles')->findOrFail($id);
         return response()->json($project->members);
+    }
+
+      public function addMember(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'role_id' => 'required|exists:role,id',
+        ]);
+
+        $user = User::where('email', $validatedData['email'])->first();
+        $project = Project::find($id);
+
+        if ($project && $user) {
+            UserRole::create([
+                'user_id' => $user->id,
+                'role_id' => $validatedData['role_id'],
+                'project_id' => $project->id,
+            ]);
+        }
+
+        return redirect()->back();
+    }
+
+    public function updateMemberRole(Request $request, $projectId, $memberId)
+    {
+        $validatedData = $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $userRole = UserRole::with('users')->where('project_id', $projectId)
+                            ->where('id', $memberId)
+                            ->first();
+
+        if ($userRole) {
+            $userRole->update(['role_id' => $validatedData['role_id']]);
+        }
+
+        return redirect()->back();
     }
 }

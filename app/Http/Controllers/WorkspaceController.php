@@ -134,10 +134,10 @@ class WorkspaceController extends Controller
                 'workspace_id' => $workspace->id,
             ]);
 
-            Mail::raw('You have been added to a new workspace: ' . $workspace->title, function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('New Workspace Added');
-            });
+            // Mail::raw('You have been added to a new workspace: ' . $workspace->title, function ($message) use ($user) {
+            //     $message->to($user->email)
+            //             ->subject('New Workspace Added');
+            // });
 
             $user->notify(new UserWorkspaceNotification($user, $workspace));
         }
