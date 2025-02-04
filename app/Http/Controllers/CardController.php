@@ -80,15 +80,6 @@ class CardController extends Controller
             }
         }
 
-        // Check if the task is overdue
-        if (now()->greaterThan($card->due_date)) {
-            $user = User::where('id', $card->user_project_id)->first();
-            Mail::raw('Your task is overdue: ' . $card->title, function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Task Overdue');
-            });
-        }
-
         return response()->json(['message' => 'Card updated successfully']);
     }
 
