@@ -270,10 +270,10 @@ fetchRoles();
                         <tbody>
                             <tr v-for="(member, index) in members.data" :key="member.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>{{ member.users.name }}</td>
-                                <td>{{ member.users.email }}</td>
+                                <td>{{ member.users?.name || 'N/A' }}</td>
+                                <td>{{ member.users?.email || 'N/A' }}</td>
                                 <td>
-                                    <div v-if="member.users.availability === 'available'" style=" color: beige;
+                                    <div v-if="member.users?.availability === 'available'" style="color: beige;
                                             background-color: green;
                                             border-radius: 20px;
                                             text-transform: capitalize;
@@ -281,12 +281,15 @@ fetchRoles();
                                             padding:3px;">
                                         {{ member.users.availability }}
                                     </div>
-                                    <div v-else="member.users.availability === 'unavailable'" style="color: rgb(255, 255, 255);
+                                    <div v-else-if="member.users?.availability === 'unavailable'" style="color: rgb(255, 255, 255);
                                             background-color: red;
                                             border-radius: 20px;
                                             text-transform: capitalize;
                                             text-align: center;">
                                         {{ member.users.availability }}
+                                    </div>
+                                    <div v-else style="color: gray; text-align: center;">
+                                        N/A
                                     </div>
                                 </td>
 
