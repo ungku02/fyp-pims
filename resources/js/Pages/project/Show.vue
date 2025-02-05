@@ -243,7 +243,7 @@ console.log('Project prop in Show.vue:', props.project);
                                 <th>Name</th>
                                 <th>Role</th>
                                 <!-- <th>Availability</th> -->
-                                <th>Actions</th>
+                                <!-- <th>Actions</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -257,12 +257,12 @@ console.log('Project prop in Show.vue:', props.project);
                                             Available
                                         </button>
                                     </td> -->
-                                <td class="flex justify-content-center">
+                                <!-- <td class="flex justify-content-center">
                                     <button @click="openEditMemberModal(member)"
                                         class="btn btn-sm btn-grad-outline text-center">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                </td>
+                                </td> -->
                             </tr>
                         </tbody>
                     </table>

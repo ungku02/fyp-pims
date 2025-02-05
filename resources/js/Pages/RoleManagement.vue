@@ -156,10 +156,10 @@ onMounted(() => {
                                             data-bs-target="#deleteModal">
                                             <i class="bi bi-trash"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-grad-outline text-center me-2"
+                                        <!-- <button class="btn btn-sm btn-grad-outline text-center me-2"
                                             @click="() => viewRole(role)">
                                             <i class="bi bi-eye"></i>
-                                        </button>
+                                        </button> -->
                                     </td>
                                 </tr>
                             </tbody>
@@ -197,7 +197,7 @@ onMounted(() => {
         </div>
 
 
-        <!-- View Role Modal -->
+        View Role Modal
         <div v-if="showViewModal.value" class="modal">
             <div class="modal-content">
                 <span class="close" @click="showViewModal.value = false">&times;</span>
