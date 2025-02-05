@@ -257,7 +257,7 @@ onMounted(() => {
 
             <div class="alert alert-danger alert-dismissible fade show mt-4 custom-alert" role="alert"
                 v-if="errorMessageVisible === true">
-                <strong>Error!</strong> An error occurred while responding to the swap request or the task was rejected.
+                <strong>Error!</strong> The task request has been rejected.
                 <button type="button" class="close" @click="closeAlert('error')" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
